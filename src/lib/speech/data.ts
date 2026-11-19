@@ -12,6 +12,7 @@ type Supabase = Awaited<ReturnType<typeof createClient>>;
 export async function getQuotaCounts(supabase: Supabase): Promise<QuotaCounts | null> {
   const { data, error } = await supabase.rpc("speech_quota");
   const row = Array.isArray(data) ? data[0] : data;
+  if (error) console.error("Could not read the speech counts:", error.code, error.message);
   if (error || !row) return null;
   return { freeUsed: row.free_used, attempts24h: row.attempts_24h, global24h: row.global_24h };
 }
@@ -69,7 +70,10 @@ export async function listRecentSpeeches(supabase: Supabase, limit = 10): Promis
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(limit);
-  if (error) return null;
+  if (error) {
+    console.error("Could not list speeches:", error.code, error.message);
+    return null;
+  }
 
   const now = Date.now();
   return data.map((row) => ({
@@ -104,6 +108,7 @@ export async function getSpeech(supabase: Supabase, id: string): Promise<Speech 
     .eq("id", id)
     .is("deleted_at", null)
     .maybeSingle();
+  if (error) console.error("Could not load a speech:", error.code, error.message);
   if (error || !data) return null;
 
   return {

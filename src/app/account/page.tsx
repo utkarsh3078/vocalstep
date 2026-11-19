@@ -32,6 +32,8 @@ async function Account({ searchParams }: Pick<PageProps<"/account">, "searchPara
     .select("full_name")
     .eq("id", user.id)
     .maybeSingle();
+  // The page shows a short message; the server log says why.
+  if (error) console.error("Could not load the profile:", error.code, error.message);
 
   return (
     <div className="mt-6 space-y-6">

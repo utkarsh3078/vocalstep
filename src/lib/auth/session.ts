@@ -1,6 +1,7 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 
 import { isSupabaseConfigured } from "@/lib/env/public";
@@ -17,9 +18,19 @@ export interface CurrentUser {
  * The signed-in user for this request, or null. The token is verified, so the
  * id can be trusted. Never take a user id from the browser instead.
  * Cached per request, so calling it from several components costs one check.
+ *
+ * Call this (or requireUser) before any other Supabase read in a component:
+ * it marks the render as request-time, which Supabase needs because it checks
+ * token expiry against the clock.
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if (!isSupabaseConfigured()) return null;
+
+  // Supabase reads the clock (Date.now) to check whether the token has
+  // expired. With Cache Components, Next.js may prerender this component with
+  // cookies already available but the clock not yet allowed, and reports an
+  // error in development. Waiting for the real request first avoids that.
+  await connection();
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
