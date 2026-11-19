@@ -5,6 +5,7 @@ import { Suspense } from "react";
 
 import { HeaderAccount } from "@/components/header-account";
 import { site } from "@/config/site";
+import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
 
@@ -53,10 +54,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               {site.name}
             </Link>
             <nav aria-label="Main" className="flex gap-4 text-sm">
-              <Link href="/#how-it-works" className="hover:underline hover:underline-offset-4">
+              <Link
+                href="/#how-it-works"
+                className="hover:underline hover:underline-offset-4"
+              >
                 How it works
               </Link>
-              <Link href="/#features" className="hover:underline hover:underline-offset-4">
+              <Link
+                href="/#features"
+                className="hover:underline hover:underline-offset-4"
+              >
                 Features
               </Link>
             </nav>
@@ -69,7 +76,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">{children}</main>
+        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
+          {children}
+        </main>
 
         <footer className="border-t border-neutral-200">
           <div className="mx-auto w-full max-w-3xl px-4 py-6 text-sm text-neutral-600">
@@ -77,7 +86,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <ul className="flex flex-wrap gap-x-5 gap-y-2">
                 {FOOTER_LINKS.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="underline underline-offset-4">
+                    <Link
+                      href={link.href}
+                      className="underline underline-offset-4"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -89,6 +101,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </p>
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
