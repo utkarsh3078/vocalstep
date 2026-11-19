@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { SpeechContent } from "@/components/speech-content";
+import { PracticeLink } from "@/components/teleprompter/practice-link";
 import { practice } from "@/config/practice";
 import { samples } from "@/content/samples";
 import { getSample } from "@/lib/samples";
@@ -64,6 +65,14 @@ async function SampleSpeech({ params }: { params: Promise<{ slug: string }> }) {
       </p>
 
       <div className="mt-6">
+        <PracticeLink
+          speechId={`sample:${sample.slug}`}
+          wordCount={wordCount}
+          href={`/samples/${sample.slug}/practice`}
+        />
+      </div>
+
+      <div className="mt-8">
         <SpeechContent blocks={blocks} language={sample.language} />
       </div>
     </>

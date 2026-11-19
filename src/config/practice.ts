@@ -25,6 +25,9 @@ export const practice = {
   },
   defaultDifficulty: "intermediate",
 
+  /** A session counts as completed, and Finish is offered, at this fraction of the speech. */
+  completionThreshold: 0.9,
+
   topic: {
     minLength: 3,
     maxLength: 300,
