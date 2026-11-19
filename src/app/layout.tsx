@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
+import { Suspense } from "react";
 
+import { HeaderAccount } from "@/components/header-account";
 import { site } from "@/config/site";
 
 import "./globals.css";
@@ -25,10 +27,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-white font-sans text-neutral-900">
         <header className="border-b border-neutral-200">
-          <div className="mx-auto flex w-full max-w-3xl items-center px-4 py-4">
+          <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-4 py-4">
             <Link href="/" className="text-lg font-semibold">
               {site.name}
             </Link>
+            {/* Reads the session, so it streams in without holding up the page. */}
+            <Suspense fallback={null}>
+              <HeaderAccount />
+            </Suspense>
           </div>
         </header>
 
