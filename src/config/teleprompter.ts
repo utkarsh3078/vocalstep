@@ -25,6 +25,25 @@ export const teleprompter = {
   /** The reading line sits this fraction of the screen height from the top. */
   readingLine: 1 / 3,
 
+  /**
+   * Word highlight. All text sits light; the word at the reading line turns
+   * dark and bold, words just ahead brighten as it approaches, and words just
+   * read fade back to light.
+   */
+  highlight: {
+    /** Opacity of text away from the reading point, from 0 to 1. */
+    dimOpacity: 0.38,
+    /** Words this far ahead of the reading point start to darken. */
+    aheadWords: 1.5,
+    /** Words behind it fade back to light over this many words. */
+    behindWords: 3,
+    /**
+     * An outline drawn around the current word's letters so it looks bold,
+     * in em. Real bold would widen the word and re-wrap the lines.
+     */
+    boldStrokeEm: 0.035,
+  },
+
   /** How often progress is written to the browser while it changes. */
   saveIntervalMs: 1000,
   /** How often the time and progress display refreshes while playing. */

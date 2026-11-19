@@ -9,11 +9,13 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type CSSProperties,
 } from "react";
 
 import { practice, type LanguageCode } from "@/config/practice";
 import { teleprompter } from "@/config/teleprompter";
 import type { SpeechBlock } from "@/lib/speech/blocks";
+import { emphasis, highlightRange, wordOpacity } from "@/lib/teleprompter/highlight";
 import {
   groupLines,
   groupRuns,
@@ -163,6 +165,10 @@ function TeleprompterScreen({
   const touchingRef = useRef(false);
   const dirtyRef = useRef(false);
   const lastDisplayRef = useRef(0);
+  /** Every spoken word's element, in speech order. */
+  const wordsRef = useRef<HTMLElement[]>([]);
+  /** The words currently styled by the highlight, so they can be reset. */
+  const paintedRef = useRef<[number, number] | null>(null);
 
   // ----- Helpers (called from event handlers and effects, never during render)
 
@@ -190,11 +196,60 @@ function TeleprompterScreen({
     writtenTopRef.current = scroller.scrollTop;
   }
 
+  /**
+   * The word position at the reading line. Uses the exact, fractional scroll
+   * value rather than the browser's rounded one, so the highlight glides
+   * smoothly even when the text moves less than a pixel per frame.
+   */
   function readPosition(): number {
-    const scroller = scrollerRef.current;
     const layout = layoutRef.current;
-    if (!scroller || !layout) return positionRef.current;
-    return positionAt(layout.lines, scroller.scrollTop + layout.lineOffset, layout.lineHeight);
+    if (!layout) return positionRef.current;
+    return positionAt(layout.lines, exactTopRef.current + layout.lineOffset, layout.lineHeight);
+  }
+
+  function resetWord(word: HTMLElement) {
+    word.style.removeProperty("color");
+    word.style.removeProperty("opacity");
+    word.style.removeProperty("-webkit-text-stroke-width");
+  }
+
+  /**
+   * Darkens and bolds the words around the reading point; all other text stays
+   * light (set once in CSS). Only the few words near the point are touched, so
+   * this is cheap enough to run every frame, even for very long speeches.
+   *
+   * A highlighted word gets full colour faded with opacity, not a see-through
+   * colour, so its bold outline and its letters fade together without seams.
+   */
+  function paintHighlight() {
+    const words = wordsRef.current;
+    const { highlight } = teleprompter;
+    const position = positionRef.current;
+    const range = highlightRange(position, words.length, highlight);
+    const previous = paintedRef.current;
+
+    if (previous) {
+      for (let index = previous[0]; index <= previous[1]; index += 1) {
+        if (!range || index < range[0] || index > range[1]) resetWord(words[index]);
+      }
+    }
+    if (range) {
+      for (let index = range[0]; index <= range[1]; index += 1) {
+        const word = words[index];
+        const strength = emphasis(index, position, highlight);
+        if (strength <= 0) {
+          resetWord(word);
+          continue;
+        }
+        word.style.color = "rgb(var(--tp-text))";
+        word.style.opacity = wordOpacity(strength, highlight.dimOpacity).toFixed(3);
+        word.style.setProperty(
+          "-webkit-text-stroke-width",
+          `${(highlight.boldStrokeEm * strength).toFixed(4)}em`,
+        );
+      }
+    }
+    paintedRef.current = range;
   }
 
   /** True when the text has been re-laid out since it was last measured. */
@@ -220,10 +275,20 @@ function TeleprompterScreen({
     if (!scroller || !content || scroller.clientHeight === 0) return;
 
     const lineHeight = Number(content.dataset.lineHeight) || 0;
-    const centers = Array.from(
-      content.querySelectorAll<HTMLElement>("[data-word]"),
-      (word) => content.offsetTop + word.offsetTop + word.offsetHeight / 2,
-    );
+    const words = Array.from(content.querySelectorAll<HTMLElement>("[data-word]"));
+    if (words.length !== wordsRef.current.length || words[0] !== wordsRef.current[0]) {
+      // New elements: clear the highlight left on the old ones.
+      const previous = paintedRef.current;
+      if (previous) {
+        for (let index = previous[0]; index <= previous[1]; index += 1) {
+          const old = wordsRef.current[index];
+          if (old) resetWord(old);
+        }
+      }
+      paintedRef.current = null;
+      wordsRef.current = words;
+    }
+    const centers = words.map((word) => content.offsetTop + word.offsetTop + word.offsetHeight / 2);
     const lines = groupLines(centers, lineHeight / 4);
     const lineOffset = scroller.clientHeight * teleprompter.readingLine;
 
@@ -238,6 +303,7 @@ function TeleprompterScreen({
 
     const maxTop = scroller.scrollHeight - scroller.clientHeight;
     writeScroll(clamp(offsetFor(lines, positionRef.current, lineHeight) - lineOffset, 0, maxTop));
+    paintHighlight();
   }
 
   function saveNow() {
@@ -365,6 +431,7 @@ function TeleprompterScreen({
     manualUntilRef.current = performance.now() + teleprompter.manualScrollPauseMs;
     positionRef.current = readPosition();
     dirtyRef.current = true;
+    paintHighlight();
     publishDisplay();
   });
   useEffect(() => {
@@ -421,6 +488,7 @@ function TeleprompterScreen({
     activeSecondsRef.current += seconds;
     positionRef.current = readPosition();
     dirtyRef.current = true;
+    paintHighlight();
 
     if (positionRef.current >= wordCount || exactTopRef.current >= maxTop) {
       finish();
@@ -577,7 +645,14 @@ function TeleprompterScreen({
     <div
       ref={rootRef}
       className={`fixed inset-0 z-50 flex flex-col ${dark ? "bg-neutral-950 text-neutral-100" : "bg-white text-neutral-900"}`}
-      style={{ colorScheme: settings.theme }}
+      style={
+        {
+          colorScheme: settings.theme,
+          // The text colour as RGB channels (neutral-100 / neutral-900), so the
+          // speech can use it at any strength.
+          "--tp-text": dark ? "245 245 245" : "23 23 23",
+        } as CSSProperties
+      }
     >
       <header
         className={`border-b px-3 py-2 text-sm ${dark ? "border-neutral-800 bg-neutral-900" : "border-neutral-200 bg-neutral-50"}`}
@@ -623,16 +698,6 @@ function TeleprompterScreen({
       </div>
 
       <div className="relative min-h-0 flex-1">
-        {/* The reading line: a soft band behind the line being read. */}
-        <div
-          aria-hidden="true"
-          className={`pointer-events-none absolute inset-x-0 border-y ${dark ? "border-amber-300/30 bg-amber-300/10" : "border-amber-500/40 bg-amber-200/40"}`}
-          style={{
-            top: `calc(${teleprompter.readingLine * 100}% - ${lineHeightPx / 2}px)`,
-            height: lineHeightPx,
-          }}
-        />
-
         <div
           ref={scrollerRef}
           tabIndex={0}
@@ -643,7 +708,12 @@ function TeleprompterScreen({
             ref={contentRef}
             data-line-height={lineHeightPx}
             className="relative mx-auto max-w-3xl px-4 pt-[40vh] pb-[70vh] sm:px-6"
-            style={{ fontSize: settings.fontSize, lineHeight: settings.lineHeight }}
+            style={{
+              fontSize: settings.fontSize,
+              lineHeight: settings.lineHeight,
+              // All words start light; paintHighlight() darkens the current ones.
+              color: `rgb(var(--tp-text) / ${teleprompter.highlight.dimOpacity})`,
+            }}
           >
             <TeleprompterText blocks={blocks} language={language} />
           </div>
@@ -653,7 +723,7 @@ function TeleprompterScreen({
           <p
             className={`pointer-events-none absolute inset-x-0 bottom-2 px-3 text-center text-sm ${dark ? "text-neutral-400" : "text-neutral-600"}`}
           >
-            Press Start or the Space bar when you are ready, and read the line in the band.
+            Press Start or the Space bar when you are ready, and read the dark word as it moves along.
           </p>
         )}
 

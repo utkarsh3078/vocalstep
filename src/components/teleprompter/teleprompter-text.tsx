@@ -24,7 +24,8 @@ export const TeleprompterText = memo(function TeleprompterText({
         block.type === "heading" ? (
           <h2
             key={index}
-            className="mt-[1.5em] mb-[0.5em] text-[0.7em] font-semibold tracking-wide uppercase opacity-60 first:mt-0"
+            // Full text colour, not the light colour the words start with.
+            className="mt-[1.5em] mb-[0.5em] text-[0.7em] font-semibold tracking-wide text-[rgb(var(--tp-text))] uppercase opacity-60 first:mt-0"
           >
             {block.text}
           </h2>
