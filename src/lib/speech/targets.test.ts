@@ -4,6 +4,7 @@ import {
   formatSpeakingTime,
   isTooShort,
   sectionTargets,
+  splitTarget,
   speakingSeconds,
   wordRange,
   wordTarget,
@@ -83,5 +84,13 @@ describe("formatSpeakingTime", () => {
   it("handles very short texts", () => {
     expect(formatSpeakingTime(20)).toBe("under 1 min");
     expect(formatSpeakingTime(50)).toBe("about 1 min");
+  });
+});
+
+describe("splitTarget", () => {
+  it("splits into near-equal parts that add up", () => {
+    expect(splitTarget(1300, 3)).toEqual([434, 433, 433]);
+    expect(splitTarget(650, 1)).toEqual([650]);
+    expect(() => splitTarget(650, 0)).toThrow(RangeError);
   });
 });

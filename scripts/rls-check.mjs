@@ -2,8 +2,9 @@
 // public key and real user sessions, calling Supabase directly.
 //
 // Needs two confirmed test accounts that you do not use for anything else.
-// It adds a few soft-deleted test speeches to account A (they cannot be removed,
-// by design) and changes account A's reading speed preference.
+// Each run adds one failed, soft-deleted test speech to account A (speeches
+// cannot be removed, by design). That uses one of A's 6 daily attempts but none
+// of its free speeches, so the check can run up to 6 times a day.
 //
 //   SUPABASE_URL=... SUPABASE_ANON_KEY=... \
 //   RLS_USER_A_EMAIL=... RLS_USER_A_PASSWORD=... \
@@ -112,10 +113,10 @@ const stillThere = await a.client.from("speeches").select("id").eq("id", id);
 check("speeches cannot be hard-deleted", refused(r) && stillThere.data?.length === 1, why(r));
 r = await a.client.from("speeches").update({ topic: "Something else" }).eq("id", id).select();
 check("a speech's topic cannot change", Boolean(r.error), why(r));
-r = await a.client.from("speeches").update({ status: "ready", content: "## Hi\n\nHello." }).eq("id", id).select();
-check("generating can become ready", !r.error && r.data.length === 1, why(r));
 r = await a.client.from("speeches").update({ status: "failed" }).eq("id", id).select();
-check("a ready speech cannot be marked failed", Boolean(r.error), why(r));
+check("generating can become failed", !r.error && r.data.length === 1, why(r));
+r = await a.client.from("speeches").update({ status: "ready" }).eq("id", id).select();
+check("a failed speech cannot become ready", Boolean(r.error), why(r));
 r = await a.client.from("speeches").update({ version: 2 }).eq("id", id).select();
 check("the version can go up", !r.error && r.data.length === 1, why(r));
 r = await a.client.from("speeches").update({ version: 1 }).eq("id", id).select();
@@ -126,6 +127,17 @@ r = await a.client.from("speeches").update({ deleted_at: null }).eq("id", id).se
 check("a deleted speech stays deleted", Boolean(r.error), why(r));
 r = await a.client.from("speeches").select("id", { count: "exact", head: true }).eq("id", id);
 check("deleted speeches still count toward limits", r.count === 1, `count ${r.count}`);
+
+// --- Limits -----------------------------------------------------------------
+r = await a.client.rpc("speech_quota");
+const quota = Array.isArray(r.data) ? r.data[0] : r.data;
+check(
+  "a user can read their own generation counts",
+  !r.error && quota && quota.attempts_24h >= 1 && Number.isInteger(quota.free_used),
+  r.error ? r.error.message : JSON.stringify(quota),
+);
+r = await anon.rpc("speech_quota");
+check("signed-out visitors cannot read generation counts", Boolean(r.error), why(r));
 
 // Clean up any speech a broken rule let through above.
 await a.client.from("speeches").update({ deleted_at: new Date().toISOString() }).is("deleted_at", null).eq("topic", speech.topic);

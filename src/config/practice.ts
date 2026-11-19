@@ -10,11 +10,13 @@ export const practice = {
   /**
    * Languages are plain text codes, so adding one needs no database change.
    * `wpm` is the speaking speed used for word targets and time estimates.
-   * The Hindi figure is a starting point; tune it after real testing.
+   * `tokensPerWord` sizes the AI's output budget; Devanagari needs more tokens
+   * per word than English. The Hindi figures are starting points; tune them after
+   * real testing.
    */
   languages: {
-    en: { label: "English", wpm: 130 },
-    hi: { label: "Hindi", wpm: 130 },
+    en: { label: "English", wpm: 130, tokensPerWord: 1.6 },
+    hi: { label: "Hindi", wpm: 130, tokensPerWord: 4 },
   },
   defaultLanguage: "en",
 
@@ -31,6 +33,32 @@ export const practice = {
   topic: {
     minLength: 3,
     maxLength: 300,
+    /** Shown as clickable examples on the Create page. */
+    examples: [
+      "Why sleep matters",
+      "How rain forms",
+      "The joy of cooking at home",
+      "What makes a good friend",
+      "How smartphones changed daily life",
+      "Learning from mistakes",
+    ],
+    /**
+     * Words that get a topic refused before any AI request is made. Matched as
+     * whole words, ignoring case. The AI's own topic check catches the rest;
+     * this list only saves a request on the obvious cases.
+     */
+    blockedTerms: [
+      "porn",
+      "pornography",
+      "nude",
+      "nudes",
+      "xxx",
+      "rape",
+      "suicide",
+      "self-harm",
+      "terrorist",
+      "terrorism",
+    ],
   },
 
   generation: {
@@ -40,8 +68,22 @@ export const practice = {
     lengthTolerance: 0.1,
     /** A section more than this fraction short of its target is extended once. */
     shortSectionThreshold: 0.15,
+    /** Output budget for the outline request, in tokens. */
+    outlineMaxTokens: 2048,
+    /** Extra output budget on every section request, for thinking and slack. */
+    sectionTokenAllowance: 600,
+    /** One AI request may take this long before it is given up. */
+    requestTimeoutSeconds: 60,
+    /** After "rate limit reached", wait at most this long before the one retry. */
+    rateLimitRetryMaxSeconds: 10,
+    /** A speech still "generating" after this long is treated as abandoned. */
+    staleAfterMinutes: 15,
   },
 
+  /**
+   * The database enforces the same numbers (supabase/migrations/*_speech_limits.sql),
+   * because users can reach it directly. Change both together.
+   */
   limits: {
     /** Free generated speeches per account, for the life of the account. */
     freeSpeeches: 2,
@@ -66,6 +108,7 @@ export const practice = {
     illegal: "This topic isn't suitable for speaking practice. Try a different topic.",
     personal_advice:
       "VocalStep can't give medical, legal or financial advice. Try a general topic instead.",
+    unsuitable: "This topic isn't suitable for speaking practice. Try a different topic.",
     not_a_topic:
       "We couldn't understand this topic. Try rephrasing it in a few clear words.",
   },

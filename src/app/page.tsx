@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { practice } from "@/config/practice";
 import { getAllSamples } from "@/lib/samples";
 
 export default function HomePage() {
@@ -21,6 +22,23 @@ export default function HomePage() {
         >
           Start Speaking
         </a>
+      </section>
+
+      <section aria-labelledby="create-heading" className="mt-14">
+        <h2 id="create-heading" className="text-2xl font-semibold">
+          Speak about your own topic
+        </h2>
+        <p className="mt-2 text-neutral-700">
+          Create a free account and we&apos;ll write {practice.limits.freeSpeeches} speeches on topics
+          you choose, for {practice.durations.join(", ").replace(/, (\d+)$/, " or $1")} minutes of
+          practice.
+        </p>
+        <Link
+          href="/create"
+          className="mt-4 inline-block rounded-md border border-neutral-900 px-5 py-3 font-medium hover:bg-neutral-100"
+        >
+          Create a speech
+        </Link>
       </section>
 
       <section id="samples" aria-labelledby="samples-heading" className="mt-14 scroll-mt-6">

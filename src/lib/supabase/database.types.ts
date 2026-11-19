@@ -39,7 +39,11 @@ export type Database = {
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "speech_quota":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "attempts_24h": number,"free_used": number,"global_24h": number
+            }[]
+                           }
           }
           Enums: {
             [_ in never]: never

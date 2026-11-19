@@ -20,5 +20,5 @@ export const auth = {
    * Address prefixes that need an account. The proxy sends signed-out visitors
    * to the login page, and each page checks the session again on the server.
    */
-  protectedPaths: ["/account", "/reset-password"],
+  protectedPaths: ["/account", "/reset-password", "/create", "/speeches"],
 } as const;

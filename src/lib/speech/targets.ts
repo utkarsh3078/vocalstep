@@ -38,7 +38,16 @@ export function sectionTargets(totalWords: number, sectionWords: number): number
   assertPositive(sectionWords, "sectionWords");
 
   const total = Math.round(totalWords);
-  const count = Math.max(1, Math.round(total / sectionWords));
+  return splitTarget(total, Math.max(1, Math.round(total / sectionWords)));
+}
+
+/** Splits a word target into `parts` near-equal whole numbers that add up to it. */
+export function splitTarget(totalWords: number, parts: number): number[] {
+  assertPositive(totalWords, "totalWords");
+  assertPositive(parts, "parts");
+
+  const total = Math.round(totalWords);
+  const count = Math.floor(parts);
   const base = Math.floor(total / count);
   const remainder = total - base * count;
 
