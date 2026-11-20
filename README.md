@@ -10,6 +10,8 @@ Live at [vocalstep.in](https://vocalstep.in).
   2 free per account.
 - The teleprompter scrolls at a set words-per-minute, highlights the word being read,
   and remembers your place.
+- Signed-in users' practice is saved to their account: resume on any device, minutes
+  per day, and a daily streak (2 minutes a day counts).
 
 Built with Next.js 16 (App Router), TypeScript, Tailwind CSS, Supabase (Postgres, Auth,
 Row Level Security), Google Gemini via `@google/genai`, and Vercel.
@@ -112,7 +114,8 @@ data, back-date speeches, delete them, and so on. Every check should pass.
    ```
 
 Each run leaves one failed, soft-deleted test speech on user A (speeches can never be
-hard-deleted, by design) and uses one of its 6 daily attempts.
+hard-deleted, by design) and uses one of its 6 daily attempts. It also adds one completed
+practice session on a sample, with a few seconds of practice, to user A's totals.
 
 ### 2.6 Google sign-in (optional)
 
@@ -203,6 +206,10 @@ On the live site, in a private browser window:
 - [ ] Practise a sample as a guest: Start, pause, change speed, reload (it resumes), finish.
 - [ ] Sign up with a real address; the confirmation email arrives and its link signs you in.
 - [ ] Generate a speech; text streams in; the review page and teleprompter work.
+- [ ] Practise it for a minute, pause, and open it on another device (or a private window,
+      signed in): **Resume** picks up at the same place.
+- [ ] Finish it: the end screen shows **Today** and **Streak**, and **Your account** shows
+      your practice totals.
 - [ ] Generate a second one; then the "free speeches used" screen shows.
 - [ ] A political topic is politely refused and doesn't use up a free speech.
 - [ ] Sign out, reset your password by email, sign in with the new one.
@@ -217,6 +224,13 @@ On the live site, in a private browser window:
   limits, refusal messages, teleprompter speed and highlight, site details.
 - **Limits are enforced twice:** in `practice.limits` (for messages) and in the database
   (`supabase/migrations/*_speech_limits.sql`, so users can't bypass them). Change both.
+  The same goes for `completionThreshold` and `tracking.maxSecondsPerSave`, which
+  `*_practice.sql` also enforces.
+- **Practice tracking:** the teleprompter saves to the browser every second and, for
+  signed-in users, to the server every 15 seconds, on pause and when the page closes
+  (`src/lib/practice/tracker.ts` → `POST /api/practice/progress` → `record_practice()`).
+  The database credits practice time against the clock, so saves cannot add time faster
+  than it passes. Streaks are worked out in `src/lib/practice/streaks.ts`.
 - **AI:** behind one interface in `src/lib/ai/` with a Gemini and a mock implementation.
   Prompts are in `prompts.ts`; guardrails in `guardrails.ts`. In mock mode, topic markers
   such as `[refuse]`, `[block]`, `[busy]`, `[error]`, `[short]` and `[bad]` simulate each

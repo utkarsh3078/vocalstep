@@ -37,6 +37,11 @@ export default function PrivacyPage() {
           chose, and when they were made.
         </li>
         <li>Your last-used language and difficulty, to pre-fill the next speech.</li>
+        <li>
+          Your practice: when you practise, for how long, where you stopped in each speech, and the
+          sessions you finish. This gives you your minutes, your streak and your place on any device.
+        </li>
+        <li>Your time zone, taken from your browser, so practice counts toward the right day.</li>
       </ul>
 
       <h2>How speeches are written</h2>

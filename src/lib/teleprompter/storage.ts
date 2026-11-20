@@ -29,6 +29,10 @@ export interface SavedProgress {
   wordIndex: number;
   /** Time spent reading with the teleprompter playing. */
   activeSeconds: number;
+  /** When this was saved (milliseconds since 1970), to compare with the server's copy. */
+  savedAt?: number;
+  /** The signed-in user's practice session this progress belongs to. */
+  sessionId?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -81,13 +85,17 @@ export function parseSettings(raw: unknown, defaultWpm: number): TeleprompterSet
 export function parseProgress(raw: unknown, wordCount: number): SavedProgress | null {
   if (!isRecord(raw)) return null;
 
-  const { activeSeconds, wordIndex } = raw;
+  const { activeSeconds, wordIndex, savedAt, sessionId } = raw;
   if (raw.wordCount !== wordCount) return null;
   if (!Number.isInteger(wordIndex) || (wordIndex as number) < 0) return null;
   if ((wordIndex as number) >= wordCount) return null;
   if (!isFiniteNumber(activeSeconds) || activeSeconds < 0) return null;
 
-  return { wordCount, wordIndex: wordIndex as number, activeSeconds };
+  const progress: SavedProgress = { wordCount, wordIndex: wordIndex as number, activeSeconds };
+  // Optional, and missing from progress saved before tracking existed.
+  if (isFiniteNumber(savedAt) && savedAt > 0) progress.savedAt = savedAt;
+  if (typeof sessionId === "string" && /^[0-9a-f-]{36}$/i.test(sessionId)) progress.sessionId = sessionId;
+  return progress;
 }
 
 /** Storage can be missing, full or blocked (private browsing); never let that break the page. */

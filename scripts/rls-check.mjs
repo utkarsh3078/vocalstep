@@ -4,7 +4,8 @@
 // Needs two confirmed test accounts that you do not use for anything else.
 // Each run adds one failed, soft-deleted test speech to account A (speeches
 // cannot be removed, by design). That uses one of A's 6 daily attempts but none
-// of its free speeches, so the check can run up to 6 times a day.
+// of its free speeches, so the check can run up to 6 times a day. It also adds
+// one completed practice session on a sample, and a few seconds, to A's totals.
 //
 //   SUPABASE_URL=... SUPABASE_ANON_KEY=... \
 //   RLS_USER_A_EMAIL=... RLS_USER_A_PASSWORD=... \
@@ -138,6 +139,65 @@ check(
 );
 r = await anon.rpc("speech_quota");
 check("signed-out visitors cannot read generation counts", Boolean(r.error), why(r));
+
+// --- Practice tracking ---------------------------------------------------------
+// Uses a sample, so it needs no ready speech. Adds a few seconds to A's totals.
+r = await anon.rpc("start_practice_session", { target_sample: "how-the-internet-works" });
+check("signed-out visitors cannot start a practice session", Boolean(r.error), why(r));
+r = await anon.from("practice_sessions").select("id");
+check("signed-out visitors cannot read practice sessions", refused(r), why(r));
+r = await anon.from("daily_practice").select("user_id");
+check("signed-out visitors cannot read daily practice", refused(r), why(r));
+
+r = await a.client.rpc("start_practice_session", { target_speech: id });
+check("a session cannot start on a deleted or unfinished speech", Boolean(r.error), why(r));
+r = await a.client.rpc("start_practice_session", {
+  target_speech: id,
+  target_sample: "how-the-internet-works",
+});
+check("a session has exactly one target", Boolean(r.error), why(r));
+r = await a.client.rpc("start_practice_session", { target_sample: "how-the-internet-works" });
+const sessionId = r.data;
+check("a user can start a practice session on a sample", !r.error && typeof sessionId === "string", r.error?.message ?? "started");
+
+r = await a.client.from("practice_sessions").insert({ user_id: a.id, sample_slug: "x" }).select();
+check("practice sessions cannot be inserted directly", refused(r), why(r));
+r = await a.client.from("practice_sessions").update({ active_seconds: 99999 }).eq("id", sessionId).select();
+check("practice sessions cannot be changed directly", refused(r), why(r));
+r = await a.client.from("daily_practice").insert({ user_id: a.id, practice_date: "2026-01-01", seconds: 99999 }).select();
+check("daily practice cannot be written directly", refused(r), why(r));
+
+r = await b.client.from("practice_sessions").select("id").eq("id", sessionId);
+check("a user cannot read another user's practice session", refused(r), why(r));
+r = await b.client.rpc("record_practice", { session_id: sessionId, delta_seconds: 5, word_index: 1, progress: 0.1 });
+check("a user cannot record practice on another user's session", Boolean(r.error), why(r));
+
+r = await a.client.rpc("record_practice", { session_id: sessionId, delta_seconds: 3600, word_index: 10, progress: 0.2 });
+const afterBig = await a.client.from("practice_sessions").select("active_seconds").eq("id", sessionId).single();
+check(
+  "one save adds no more time than has passed since the session started",
+  !r.error && afterBig.data?.active_seconds <= 5,
+  r.error ? r.error.message : `${afterBig.data?.active_seconds} s`,
+);
+r = await a.client.rpc("record_practice", { session_id: sessionId, delta_seconds: 60, word_index: 10, progress: 0.2 });
+const afterRepeat = await a.client.from("practice_sessions").select("active_seconds").eq("id", sessionId).single();
+check(
+  "saving again at once adds almost nothing",
+  !r.error && afterRepeat.data.active_seconds - afterBig.data.active_seconds <= 1,
+  `${afterRepeat.data?.active_seconds} s`,
+);
+r = await a.client.rpc("record_practice", { session_id: sessionId, delta_seconds: 0, word_index: 20, progress: 0.5, complete: true });
+const early = await a.client.from("practice_sessions").select("status").eq("id", sessionId).single();
+check("a session cannot be completed below 90% progress", early.data?.status === "in_progress", early.data?.status);
+r = await a.client.rpc("record_practice", { session_id: sessionId, delta_seconds: 0, word_index: 99, progress: 0.95, complete: true });
+const done = await a.client.from("practice_sessions").select("status").eq("id", sessionId).single();
+check("a session completes at 90% progress or more", !r.error && done.data?.status === "completed", done.data?.status);
+r = await a.client.rpc("record_practice", { session_id: sessionId, delta_seconds: 5, word_index: 99, progress: 1 });
+check("a completed session takes no more practice time", !r.error && r.data === false, why(r));
+r = await a.client.from("daily_practice").select("seconds, sessions");
+check("a user can read their own daily practice", !r.error && r.data.length >= 1, why(r));
+r = await b.client.from("daily_practice").select("user_id").eq("user_id", a.id);
+check("a user cannot read another user's daily practice", refused(r), why(r));
 
 // Clean up any speech a broken rule let through above.
 await a.client.from("speeches").update({ deleted_at: new Date().toISOString() }).is("deleted_at", null).eq("topic", speech.topic);

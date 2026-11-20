@@ -27,8 +27,24 @@ export const practice = {
   },
   defaultDifficulty: "intermediate",
 
-  /** A session counts as completed, and Finish is offered, at this fraction of the speech. */
+  /**
+   * A session counts as completed, and Finish is offered, at this fraction of the speech.
+   * The database uses the same number (supabase/migrations/*_practice.sql); change both.
+   */
   completionThreshold: 0.9,
+
+  /** Practice tracking for signed-in users: minutes, sessions and streaks. */
+  tracking: {
+    /** A day counts toward the streak with at least this much practice. */
+    streakMinMinutes: 2,
+    /** While practising, progress is saved to the server this often. */
+    syncIntervalSeconds: 15,
+    /**
+     * The most practice time one save can add. The database enforces the same
+     * number (supabase/migrations/*_practice.sql); change both.
+     */
+    maxSecondsPerSave: 60,
+  },
 
   topic: {
     minLength: 3,

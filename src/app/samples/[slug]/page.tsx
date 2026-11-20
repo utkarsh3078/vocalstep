@@ -7,8 +7,11 @@ import { SpeechContent } from "@/components/speech-content";
 import { PracticeLink } from "@/components/teleprompter/practice-link";
 import { practice } from "@/config/practice";
 import { samples } from "@/content/samples";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getOpenSession } from "@/lib/practice/data";
 import { getSample } from "@/lib/samples";
 import { formatSpeakingTime, speakingSeconds } from "@/lib/speech/targets";
+import { createClient } from "@/lib/supabase/server";
 
 export function generateStaticParams() {
   return samples.map(({ slug }) => ({ slug }));
@@ -56,6 +59,11 @@ async function SampleSpeech({ params }: { params: Promise<{ slug: string }> }) {
   const { wpm } = practice.languages[sample.language];
   const { blocks, wordCount } = sample.speech;
   const speakingTime = formatSpeakingTime(speakingSeconds(wordCount, wpm));
+  const link = {
+    speechId: `sample:${sample.slug}`,
+    wordCount,
+    href: `/samples/${sample.slug}/practice`,
+  };
 
   return (
     <>
@@ -65,11 +73,10 @@ async function SampleSpeech({ params }: { params: Promise<{ slug: string }> }) {
       </p>
 
       <div className="mt-6">
-        <PracticeLink
-          speechId={`sample:${sample.slug}`}
-          wordCount={wordCount}
-          href={`/samples/${sample.slug}/practice`}
-        />
+        {/* The page itself is static; a signed-in user's saved place streams in. */}
+        <Suspense fallback={<PracticeLink {...link} />}>
+          <SamplePracticeLink {...link} slug={sample.slug} />
+        </Suspense>
       </div>
 
       <div className="mt-8">
@@ -77,4 +84,19 @@ async function SampleSpeech({ params }: { params: Promise<{ slug: string }> }) {
       </div>
     </>
   );
+}
+
+/** The practice button, including a signed-in user's unfinished session on this sample. */
+async function SamplePracticeLink({
+  slug,
+  ...link
+}: {
+  slug: string;
+  speechId: string;
+  wordCount: number;
+  href: string;
+}) {
+  const user = await getCurrentUser();
+  const session = user ? await getOpenSession(await createClient(), { sampleSlug: slug }) : undefined;
+  return <PracticeLink {...link} session={session} />;
 }

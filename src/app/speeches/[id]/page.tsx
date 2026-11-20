@@ -7,6 +7,7 @@ import { SpeechContent } from "@/components/speech-content";
 import { PracticeLink } from "@/components/teleprompter/practice-link";
 import { practice } from "@/config/practice";
 import { requireUser } from "@/lib/auth/session";
+import { getOpenSession } from "@/lib/practice/data";
 import { parseSpeech } from "@/lib/speech/blocks";
 import { getSpeech } from "@/lib/speech/data";
 import { formatSpeakingTime, speakingSeconds } from "@/lib/speech/targets";
@@ -77,6 +78,7 @@ async function Speech({ params }: { params: Promise<{ id: string }> }) {
   const { blocks, wordCount } = parseSpeech(speech.content);
   const { wpm } = practice.languages[speech.language];
   const speakingTime = formatSpeakingTime(speakingSeconds(wordCount, wpm));
+  const session = await getOpenSession(supabase, { speechId: speech.id }, speech.version);
 
   return (
     <>
@@ -91,6 +93,7 @@ async function Speech({ params }: { params: Promise<{ id: string }> }) {
           speechId={`speech:${speech.id}:v${speech.version}`}
           wordCount={wordCount}
           href={`/speeches/${speech.id}/practice`}
+          session={session}
         />
       </div>
 

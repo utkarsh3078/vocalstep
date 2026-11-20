@@ -4,7 +4,10 @@ import { Suspense } from "react";
 
 import { Teleprompter } from "@/components/teleprompter/teleprompter";
 import { samples } from "@/content/samples";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getOpenSession } from "@/lib/practice/data";
 import { getSample } from "@/lib/samples";
+import { createClient } from "@/lib/supabase/server";
 
 export function generateStaticParams() {
   return samples.map(({ slug }) => ({ slug }));
@@ -41,6 +44,13 @@ async function SamplePractice({ params }: { params: Promise<{ slug: string }> })
   const sample = getSample(slug);
   if (!sample) notFound();
 
+  // Signed-in users' practice on samples counts toward their minutes and streak.
+  const user = await getCurrentUser();
+  const target = { sampleSlug: sample.slug };
+  const tracking = user
+    ? { target, session: await getOpenSession(await createClient(), target) }
+    : undefined;
+
   return (
     <Teleprompter
       speechId={`sample:${sample.slug}`}
@@ -49,6 +59,7 @@ async function SamplePractice({ params }: { params: Promise<{ slug: string }> })
       wordCount={sample.speech.wordCount}
       language={sample.language}
       exitHref={`/samples/${sample.slug}`}
+      tracking={tracking}
     />
   );
 }

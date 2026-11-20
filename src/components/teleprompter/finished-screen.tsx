@@ -1,17 +1,22 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
+import { formatDays, formatMinutes } from "@/lib/practice/streaks";
 import { formatClock } from "@/lib/teleprompter/timing";
+
+import type { FinishTotals } from "./teleprompter";
 
 /** Shown over the teleprompter when a session ends. */
 export function FinishedScreen({
   title,
   activeSeconds,
+  totals,
   dark,
   onPractiseAgain,
 }: {
   title: string;
   activeSeconds: number;
+  totals: FinishTotals;
   dark: boolean;
   onPractiseAgain: () => void;
 }) {
@@ -21,6 +26,10 @@ export function FinishedScreen({
   useEffect(() => {
     headingRef.current?.focus();
   }, []);
+
+  const muted = dark ? "text-neutral-300" : "text-neutral-700";
+  const secondaryButton = `rounded-md border px-5 py-3 font-medium ${dark ? "border-neutral-600 hover:bg-neutral-800" : "border-neutral-300 hover:bg-neutral-100"}`;
+  const signedIn = totals.state !== "guest";
 
   return (
     <section
@@ -36,11 +45,45 @@ export function FinishedScreen({
         >
           Well done!
         </h2>
-        <p className={`mt-3 ${dark ? "text-neutral-300" : "text-neutral-700"}`}>
-          You finished “{title}”.
-        </p>
-        <p className="mt-6 text-sm tracking-wide uppercase opacity-70">Time spoken</p>
-        <p className="mt-1 text-4xl font-semibold tabular-nums">{formatClock(activeSeconds)}</p>
+        <p className={`mt-3 ${muted}`}>You finished “{title}”.</p>
+
+        <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div>
+            <dt className="text-sm tracking-wide uppercase opacity-70">Time spoken</dt>
+            <dd className="mt-1 text-3xl font-semibold tabular-nums">{formatClock(activeSeconds)}</dd>
+          </div>
+          {signedIn && (
+            <>
+              <div>
+                <dt className="text-sm tracking-wide uppercase opacity-70">Today</dt>
+                <dd className="mt-1 text-3xl font-semibold tabular-nums">
+                  {totals.state === "ready" ? formatMinutes(totals.stats.todaySeconds) : "–"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm tracking-wide uppercase opacity-70">Streak</dt>
+                <dd className="mt-1 text-3xl font-semibold tabular-nums">
+                  {totals.state === "ready" ? formatDays(totals.stats.currentStreak) : "–"}
+                </dd>
+              </div>
+            </>
+          )}
+        </dl>
+
+        <div aria-live="polite" className={`mt-4 text-sm ${muted}`}>
+          {totals.state === "loading" && <p role="status">Saving your practice…</p>}
+          {totals.state === "failed" && (
+            <p>We couldn&apos;t update your totals just now. Your next practice will still count.</p>
+          )}
+          {totals.state === "guest" && (
+            <p>
+              <Link href="/signup" className="underline underline-offset-4">
+                Create a free account
+              </Link>{" "}
+              to keep track of your minutes and your daily streak.
+            </p>
+          )}
+        </div>
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <button
@@ -50,12 +93,20 @@ export function FinishedScreen({
           >
             Practise again
           </button>
-          <Link
-            href="/"
-            className={`rounded-md border px-5 py-3 font-medium ${dark ? "border-neutral-600 hover:bg-neutral-800" : "border-neutral-300 hover:bg-neutral-100"}`}
-          >
-            Back to home
-          </Link>
+          {signedIn ? (
+            <>
+              <Link href="/create" className={secondaryButton}>
+                New topic
+              </Link>
+              <Link href="/account" className={secondaryButton}>
+                Your progress
+              </Link>
+            </>
+          ) : (
+            <Link href="/" className={secondaryButton}>
+              Back to home
+            </Link>
+          )}
         </div>
       </div>
     </section>

@@ -5,7 +5,41 @@ export type Database = {
   
   "public": {
           Tables: {
-            "profiles": {
+            "daily_practice": {
+                  Row: {
+                    "practice_date": string,"seconds": number,"sessions": number,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "practice_date": string,"seconds"?: number,"sessions"?: number,"user_id": string
+                  }
+                  Update: {
+                    "practice_date"?: string,"seconds"?: number,"sessions"?: number,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"practice_sessions": {
+                  Row: {
+                    "active_seconds": number,"completed_at": string | null,"credited_until": string,"id": string,"last_active_at": string,"last_word_index": number,"progress": number,"sample_slug": string | null,"speech_id": string | null,"speech_version": number,"started_at": string,"status": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active_seconds"?: number,"completed_at"?: string | null,"credited_until"?: string,"id"?: string,"last_active_at"?: string,"last_word_index"?: number,"progress"?: number,"sample_slug"?: string | null,"speech_id"?: string | null,"speech_version"?: number,"started_at"?: string,"status"?: string,"user_id": string
+                  }
+                  Update: {
+                    "active_seconds"?: number,"completed_at"?: string | null,"credited_until"?: string,"id"?: string,"last_active_at"?: string,"last_word_index"?: number,"progress"?: number,"sample_slug"?: string | null,"speech_id"?: string | null,"speech_version"?: number,"started_at"?: string,"status"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "practice_sessions_speech_id_fkey"
+      columns: ["speech_id"]
+isOneToOne: false
+      referencedRelation: "speeches"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
                   Row: {
                     "created_at": string,"full_name": string | null,"id": string,"last_difficulty": string | null,"last_language": string | null,"pref_font_size": number | null,"pref_line_height": number | null,"pref_theme": string | null,"pref_wpm": number | null,"timezone": string
                   }
@@ -39,10 +73,16 @@ export type Database = {
             [_ in never]: never
           }
           Functions: {
-            "speech_quota":
+            "record_practice":
+{ Args: { "complete"?: boolean,"delta_seconds": number,"progress": number,"session_id": string,"word_index": number }; Returns: boolean
+                           },
+"speech_quota":
 { Args: Record<PropertyKey, never>; Returns: {
               "attempts_24h": number,"free_used": number,"global_24h": number
             }[]
+                           },
+"start_practice_session":
+{ Args: { "target_sample"?: string,"target_speech"?: string,"user_timezone"?: string }; Returns: string
                            }
           }
           Enums: {

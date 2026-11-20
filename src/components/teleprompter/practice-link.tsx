@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
+import { chooseResume, type OpenSession } from "@/lib/practice/resume";
 import { parseProgress, progressKey } from "@/lib/teleprompter/storage";
 import { formatPercent, progressAt } from "@/lib/teleprompter/timing";
 
@@ -12,18 +13,23 @@ function subscribe(onChange: () => void) {
 }
 
 /**
- * The button that opens the teleprompter. Reads "Resume (NN%)" when this
- * browser has unfinished progress for the speech, and "Start Teleprompter"
- * otherwise (including on the server, where storage is not available).
+ * The button that opens the teleprompter. Reads "Resume (NN%)" when there is
+ * unfinished progress, and "Start Teleprompter" otherwise.
+ *
+ * Progress comes from this browser and, for signed-in users, from their
+ * unfinished session on the server (`session`), chosen the same way the
+ * teleprompter chooses where to resume. Leave `session` out for guests.
  */
 export function PracticeLink({
   speechId,
   wordCount,
   href,
+  session,
 }: {
   speechId: string;
   wordCount: number;
   href: string;
+  session?: OpenSession | null;
 }) {
   const stored = useSyncExternalStore(
     subscribe,
@@ -37,19 +43,18 @@ export function PracticeLink({
     () => null,
   );
 
-  let label = "Start Teleprompter";
+  let parsed: unknown = null;
   if (stored !== null) {
-    let parsed: unknown = null;
     try {
       parsed = JSON.parse(stored);
     } catch {
       // Unreadable progress is treated as none.
     }
-    const progress = parseProgress(parsed, wordCount);
-    if (progress) {
-      label = `Resume (${formatPercent(progressAt(progress.wordIndex, wordCount))})`;
-    }
   }
+  const resume = chooseResume(parseProgress(parsed, wordCount), session, wordCount);
+  const label = resume
+    ? `Resume (${formatPercent(progressAt(resume.wordIndex, wordCount))})`
+    : "Start Teleprompter";
 
   return (
     <Link

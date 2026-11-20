@@ -48,7 +48,11 @@ const FEATURES = [
   },
   {
     title: "Pick up where you left off",
-    text: "Your place in each speech is saved on this device, down to the word.",
+    text: "Your place in each speech is saved down to the word. With an account, it follows you to any device.",
+  },
+  {
+    title: "Daily streaks",
+    text: `With an account, see your minutes each day and keep a streak going: ${practice.tracking.streakMinMinutes} minutes a day counts.`,
   },
 ];
 
@@ -112,7 +116,7 @@ export default function HomePage() {
           ))}
         </ul>
         <p className="mt-6 text-sm text-neutral-600">
-          Coming soon: daily practice streaks and your practice history.
+          Coming soon: your full practice history.
         </p>
       </section>
 

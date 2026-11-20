@@ -49,4 +49,17 @@ describe("parseProgress", () => {
     expect(parseProgress({ ...saved, activeSeconds: "60" }, 650)).toBeNull();
     expect(parseProgress({ ...saved, activeSeconds: -1 }, 650)).toBeNull();
   });
+
+  it("keeps the save time and session id when they are valid", () => {
+    const sessionId = "0b8d6f2e-4a51-4c7e-9a0d-3f1e2b7c9d10";
+    expect(parseProgress({ ...saved, savedAt: 1_800_000_000_000, sessionId }, 650)).toEqual({
+      ...saved,
+      savedAt: 1_800_000_000_000,
+      sessionId,
+    });
+  });
+
+  it("drops an invalid save time or session id but keeps the position", () => {
+    expect(parseProgress({ ...saved, savedAt: "yesterday", sessionId: "../../x" }, 650)).toEqual(saved);
+  });
 });

@@ -14,6 +14,10 @@ import {
 
 import { practice, type LanguageCode } from "@/config/practice";
 import { teleprompter } from "@/config/teleprompter";
+import { chooseResume, type OpenSession } from "@/lib/practice/resume";
+import type { PracticeStats } from "@/lib/practice/streaks";
+import type { PracticeTarget } from "@/lib/practice/target";
+import { PracticeTracker, type PracticeSnapshot } from "@/lib/practice/tracker";
 import type { SpeechBlock } from "@/lib/speech/blocks";
 import { emphasis, highlightRange, wordOpacity } from "@/lib/teleprompter/highlight";
 import {
@@ -59,7 +63,20 @@ export interface TeleprompterProps {
   language: LanguageCode;
   /** Where Exit and the Esc key go. */
   exitHref: string;
+  /**
+   * For signed-in users: what is being practised, and their unfinished session
+   * on it (null for none, undefined if it could not be read). Practice time
+   * and progress are then saved to their account. Guests leave this out.
+   */
+  tracking?: { target: PracticeTarget; session: OpenSession | null | undefined };
 }
+
+/** The totals on the end-of-session screen. */
+export type FinishTotals =
+  | { state: "guest" }
+  | { state: "loading" }
+  | { state: "ready"; stats: PracticeStats }
+  | { state: "failed" };
 
 /** Measurements of the rendered text, refreshed whenever its layout changes. */
 interface Layout {
@@ -121,6 +138,7 @@ function TeleprompterScreen({
   wordCount,
   language,
   exitHref,
+  tracking,
 }: TeleprompterProps) {
   const router = useRouter();
 
@@ -128,13 +146,20 @@ function TeleprompterScreen({
     loadSettings(practice.languages[language].wpm),
   );
   const [initial] = useState(() => {
-    const saved = loadProgress(speechId, wordCount);
+    const resume = chooseResume(
+      loadProgress(speechId, wordCount),
+      tracking ? tracking.session : undefined,
+      wordCount,
+    );
     return {
-      position: saved ? positionForWord(saved.wordIndex, wordCount) : 0,
-      activeSeconds: saved?.activeSeconds ?? 0,
-      resumed: saved !== null,
+      position: resume ? positionForWord(resume.wordIndex, wordCount) : 0,
+      activeSeconds: resume?.activeSeconds ?? 0,
+      resumed: resume !== null,
+      tracker: tracking ? new PracticeTracker(tracking.target, resume) : null,
     };
   });
+  const tracker = initial.tracker;
+  const [totals, setTotals] = useState<FinishTotals>({ state: tracker ? "loading" : "guest" });
   const [status, setStatus] = useState<PlaybackStatus>(initial.resumed ? "paused" : "ready");
   /** A copy of the live position and time, refreshed a few times a second for display. */
   const [display, setDisplay] = useState({
@@ -306,6 +331,16 @@ function TeleprompterScreen({
     paintHighlight();
   }
 
+  /** The position and time now, for saving to the server. */
+  function snapshot(): PracticeSnapshot {
+    return {
+      activeSeconds: activeSecondsRef.current,
+      wordIndex: wordIndexAt(positionRef.current, wordCount),
+      progress: progressAt(positionRef.current, wordCount),
+    };
+  }
+
+  /** Saves to this browser. Server saves happen less often, through the tracker. */
   function saveNow() {
     if (statusRef.current === "finished") return;
     dirtyRef.current = false;
@@ -315,10 +350,13 @@ function TeleprompterScreen({
       clearProgress(speechId);
       return;
     }
+    const sessionId = tracker?.currentSessionId;
     saveProgress(speechId, {
       wordCount,
       wordIndex: wordIndexAt(positionRef.current, wordCount),
       activeSeconds: Math.round(activeSeconds * 10) / 10,
+      savedAt: Date.now(),
+      ...(sessionId ? { sessionId } : {}),
     });
   }
 
@@ -338,6 +376,7 @@ function TeleprompterScreen({
     if (statusRef.current !== "ready" && statusRef.current !== "paused") return;
     manualUntilRef.current = 0;
     changeStatus("playing");
+    tracker?.begin(snapshot());
   }
 
   function pause() {
@@ -345,6 +384,7 @@ function TeleprompterScreen({
     changeStatus("paused");
     publishDisplay();
     saveNow();
+    tracker?.save(snapshot(), { urgent: true });
   }
 
   function togglePlay() {
@@ -358,9 +398,17 @@ function TeleprompterScreen({
     clearProgress(speechId);
     setShowDisplay(false);
     exitOwnFullscreen();
+    if (tracker) {
+      setTotals({ state: "loading" });
+      void tracker
+        .finish(snapshot())
+        .then((stats) => setTotals(stats ? { state: "ready", stats } : { state: "failed" }));
+    }
   }
 
   function restart() {
+    // Time read so far still counts; the next Start opens a new session.
+    tracker?.reset(snapshot());
     positionRef.current = 0;
     activeSecondsRef.current = 0;
     manualUntilRef.current = 0;
@@ -521,13 +569,26 @@ function TeleprompterScreen({
   const onSaveTick = useEffectEvent(() => {
     if (dirtyRef.current) saveNow();
   });
+  const onServerSaveTick = useEffectEvent(() => {
+    if (statusRef.current !== "finished") tracker?.save(snapshot());
+  });
   const onPageHidden = useEffectEvent(() => {
     pause();
     saveNow();
+    if (statusRef.current !== "finished") tracker?.save(snapshot(), { urgent: true });
+  });
+  const onPageClose = useEffectEvent(() => {
+    onPageHidden();
+    // The fetch above may not finish as the page unloads; a beacon does.
+    if (statusRef.current !== "finished") tracker?.beacon(snapshot());
   });
   useEffect(() => {
     const interval = window.setInterval(() => onSaveTick(), teleprompter.saveIntervalMs);
-    const handlePageHide = () => onPageHidden();
+    const serverInterval = window.setInterval(
+      () => onServerSaveTick(),
+      practice.tracking.syncIntervalSeconds * 1000,
+    );
+    const handlePageHide = () => onPageClose();
     const handleVisibility = () => {
       if (document.visibilityState === "hidden") onPageHidden();
     };
@@ -536,6 +597,7 @@ function TeleprompterScreen({
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {
       window.clearInterval(interval);
+      window.clearInterval(serverInterval);
       window.removeEventListener("pagehide", handlePageHide);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
@@ -549,6 +611,7 @@ function TeleprompterScreen({
     } else {
       pause();
       saveNow();
+      tracker?.save(snapshot(), { urgent: true });
     }
     setShowDisplay(false);
     exitOwnFullscreen();
@@ -731,6 +794,7 @@ function TeleprompterScreen({
           <FinishedScreen
             title={title}
             activeSeconds={display.activeSeconds}
+            totals={totals}
             dark={dark}
             onPractiseAgain={practiseAgain}
           />
