@@ -133,3 +133,41 @@ export function displayStatus(status: string, createdAt: string, now: number): S
     ? "generating"
     : "failed";
 }
+
+/**
+ * After Regenerate: soft-deletes the old speech if it was never practised,
+ * so the list does not fill up with unused drafts. A speech with any practice
+ * is kept, with its history. Returns true when the old speech was removed.
+ * Any doubt (a failed read) keeps it.
+ */
+export async function retireIfUnpractised(supabase: Supabase, speechId: string): Promise<boolean> {
+  if ((await wasPractised(supabase, speechId)) !== false) return false;
+
+  const { data: removed, error: deleteError } = await supabase
+    .from("speeches")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", speechId)
+    .is("deleted_at", null)
+    .select("id");
+  if (deleteError) console.error("Could not remove a replaced speech:", deleteError.code, deleteError.message);
+  return !deleteError && removed.length > 0;
+}
+
+/**
+ * True when the speech has any practice: time spoken or a completed session.
+ * (Pressing Start and leaving straight away is not practice.) Null if it
+ * could not be checked.
+ */
+export async function wasPractised(supabase: Supabase, speechId: string): Promise<boolean | null> {
+  const { data, error } = await supabase
+    .from("practice_sessions")
+    .select("id")
+    .eq("speech_id", speechId)
+    .or("active_seconds.gt.0,status.eq.completed")
+    .limit(1);
+  if (error) {
+    console.error("Could not check a speech's practice:", error.code, error.message);
+    return null;
+  }
+  return data.length > 0;
+}

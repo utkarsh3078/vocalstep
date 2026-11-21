@@ -10,7 +10,8 @@ import type { OutlineSection } from "@/lib/ai/types";
  *   delta         streamed text for the current section, as it arrives
  *   section_text  the final, cleaned text of a section; replaces its deltas
  *                 (an empty text clears the section before it is rewritten)
- *   done          the speech is saved and ready
+ *   done          the speech is saved and ready; when it replaces another
+ *                 speech, `replaced` says whether the old one was removed
  *   error         generation stopped; see GenerationErrorCode
  */
 export type GenerationEvent =
@@ -18,7 +19,7 @@ export type GenerationEvent =
   | { type: "section"; index: number; heading: string }
   | { type: "delta"; index: number; text: string }
   | { type: "section_text"; index: number; text: string }
-  | { type: "done"; speechId: string; wordCount: number }
+  | { type: "done"; speechId: string; wordCount: number; replaced?: boolean }
   | { type: "error"; code: GenerationErrorCode; reason?: RefusalReason };
 
 /**

@@ -6,7 +6,7 @@ import { cleanTopic, screenTopic } from "@/lib/ai/guardrails";
 import { getSpeechWriter } from "@/lib/ai/provider";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/env/public";
-import { getQuotaCounts } from "@/lib/speech/data";
+import { getQuotaCounts, getSpeech, retireIfUnpractised } from "@/lib/speech/data";
 import { generateSpeech } from "@/lib/speech/generate";
 import { checkQuota } from "@/lib/speech/quota";
 import { encodeEvent, type GenerationErrorCode, type GenerationEvent } from "@/lib/speech/stream";
@@ -24,12 +24,22 @@ export const maxDuration = 300;
 const languages = Object.keys(practice.languages) as [LanguageCode, ...LanguageCode[]];
 const difficulties = Object.keys(practice.difficulties) as [Difficulty, ...Difficulty[]];
 
-const requestSchema = z.object({
-  topic: z.string().max(practice.topic.maxLength * 4),
-  minutes: z.number().refine((value) => (practice.durations as readonly number[]).includes(value)),
-  language: z.enum(languages),
-  difficulty: z.enum(difficulties),
-});
+const durationSchema = z.number().refine((value) => (practice.durations as readonly number[]).includes(value));
+
+/**
+ * A new speech from the Create form, or `replaces`: write one of the user's
+ * speeches again with its own settings (Regenerate), which come from the
+ * database, not the request.
+ */
+const requestSchema = z.union([
+  z.strictObject({
+    topic: z.string().max(practice.topic.maxLength * 4),
+    minutes: durationSchema,
+    language: z.enum(languages),
+    difficulty: z.enum(difficulties),
+  }),
+  z.strictObject({ replaces: z.uuid() }),
+]);
 
 /** Faults in the request or on the server keep an error status. */
 const FAULT_STATUS: Partial<Record<GenerationErrorCode, number>> = {
@@ -76,7 +86,25 @@ export async function POST(request: NextRequest) {
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) return errorResponse("invalid");
 
-  const topic = cleanTopic(parsed.data.topic);
+  const supabase = await createClient();
+
+  // Regenerate: the same settings as the speech being replaced.
+  let settings: { topic: string; minutes: number; language: LanguageCode; difficulty: Difficulty };
+  let replaces: string | null = null;
+  if ("replaces" in parsed.data) {
+    const old = await getSpeech(supabase, parsed.data.replaces);
+    if (!old || old.status !== "ready") return errorResponse("invalid");
+    const difficulty = old.difficulty as Difficulty;
+    if (!durationSchema.safeParse(old.targetMinutes).success || !Object.hasOwn(practice.difficulties, difficulty)) {
+      return errorResponse("invalid");
+    }
+    settings = { topic: old.topic, minutes: old.targetMinutes, language: old.language, difficulty };
+    replaces = old.id;
+  } else {
+    settings = parsed.data;
+  }
+
+  const topic = cleanTopic(settings.topic);
   if (topic.length < practice.topic.minLength || topic.length > practice.topic.maxLength) {
     return errorResponse("invalid");
   }
@@ -85,13 +113,12 @@ export async function POST(request: NextRequest) {
   const screened = screenTopic(topic);
   if (!screened.ok) return errorResponse("refused", screened.reason);
 
-  const supabase = await createClient();
   const counts = await getQuotaCounts(supabase);
   if (!counts) return errorResponse("failed");
   const quota = checkQuota(counts);
   if (!quota.ok) return errorResponse(quota.code);
 
-  const { language, difficulty, minutes } = parsed.data;
+  const { language, difficulty, minutes } = settings;
   const { data: speech, error: insertError } = await supabase
     .from("speeches")
     .insert({ topic, target_minutes: minutes, language, difficulty, model: writer.model })
@@ -152,6 +179,9 @@ export async function POST(request: NextRequest) {
               if (error) {
                 await markFailed(event.usage);
                 send({ type: "error", code: "failed" });
+              } else if (replaces) {
+                const replaced = await retireIfUnpractised(supabase, replaces);
+                send({ type: "done", speechId, wordCount: event.wordCount, replaced });
               } else {
                 send({ type: "done", speechId, wordCount: event.wordCount });
               }

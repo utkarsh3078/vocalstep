@@ -94,6 +94,16 @@ export const practice = {
     { category: "Everyday life", topics: ["The joy of cooking at home", "What makes a good friend"] },
   ],
 
+  /** Editing a speech by hand on its Edit page. */
+  edit: {
+    /** A saved speech needs at least this many spoken words. */
+    minWords: 20,
+    /** The database allows the same length (speeches.content); change both. */
+    maxCharacters: 60_000,
+    /** The database allows the same length (speeches.title); change both. */
+    maxTitleLength: 200,
+  },
+
   /** The dashboard and history lists. */
   lists: {
     /** Recent practice sessions on the dashboard. */

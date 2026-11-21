@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { DeleteSpeechButton } from "@/components/speech/delete-speech-button";
 import { PracticeLink } from "@/components/teleprompter/practice-link";
 import { practice } from "@/config/practice";
 import { requireUser } from "@/lib/auth/session";
@@ -38,7 +39,9 @@ export default function HistoryPage({ searchParams }: PageProps<"/history">) {
 }
 
 async function History({ searchParams }: Pick<PageProps<"/history">, "searchParams">) {
-  const page = parsePage(firstParam((await searchParams).page));
+  const query = await searchParams;
+  const page = parsePage(firstParam(query.page));
+  const deleted = firstParam(query.deleted) === "1";
   const user = await requireUser(page > 1 ? `/history?page=${page}` : "/history");
 
   const supabase = await createClient();
@@ -57,9 +60,16 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
 
   const pages = pageCount(history.total, practice.lists.historyPageSize);
 
+  const deletedNotice = deleted && (
+    <p role="status" className="mt-6 rounded-md border border-green-300 bg-green-50 p-3 text-green-900">
+      The speech has been deleted. Your practice minutes and streak are kept.
+    </p>
+  );
+
   if (history.total === 0) {
     return (
       <div className="mt-6 text-neutral-700">
+        {deletedNotice}
         <p>You haven&apos;t created any speeches yet.</p>
         <p className="mt-4">
           <Link
@@ -75,19 +85,25 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
 
   if (history.entries.length === 0) {
     return (
-      <p className="mt-6 text-neutral-700">
-        There&apos;s nothing on this page.{" "}
-        <Link href={pageHref(pages)} className="underline underline-offset-4">
-          Go to the last page
-        </Link>
-      </p>
+      <>
+        {deletedNotice}
+        <p className="mt-6 text-neutral-700">
+          There&apos;s nothing on this page.{" "}
+          <Link href={pageHref(pages)} className="underline underline-offset-4">
+            Go to the last page
+          </Link>
+        </p>
+      </>
     );
   }
 
   const date = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: defaults.timezone });
 
+  const afterDeleteHref = `${pageHref(page)}${page > 1 ? "&" : "?"}deleted=1`;
+
   return (
     <>
+      {deletedNotice}
       <p className="mt-6 text-sm text-neutral-600">
         {history.total === 1 ? "1 speech" : `${history.total} speeches`}
       </p>
@@ -123,6 +139,14 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
                   href={`/speeches/${entry.id}/practice`}
                   session={entry.practice.open}
                   startLabel={entry.practice.lastPractisedAt ? "Practise again" : "Practise"}
+                  className={smallButton}
+                />
+              )}
+              {entry.status !== "generating" && (
+                <DeleteSpeechButton
+                  id={entry.id}
+                  title={entry.title || entry.topic}
+                  afterDeleteHref={afterDeleteHref}
                   className={smallButton}
                 />
               )}
