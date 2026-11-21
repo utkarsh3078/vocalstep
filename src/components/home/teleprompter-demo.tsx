@@ -2,14 +2,38 @@
 
 import { BookOpen, Maximize2, Minus, Pause, Play, Plus } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 
 import { teleprompter } from "@/config/teleprompter";
 import type { SpeechBlock } from "@/lib/speech/blocks";
 import { demoDelay, excerptWordCount, paragraphEnds } from "@/lib/teleprompter/demo";
+import { emphasis, wordOpacity } from "@/lib/teleprompter/highlight";
 import { progressAt, stepSpeed } from "@/lib/teleprompter/timing";
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+const { highlight } = teleprompter;
+/** The real teleprompter's light-theme text colour (its --tp-text), as RGB. */
+const TEXT_RGB = "23 23 23";
+
+/**
+ * The real teleprompter's highlight, for a demo that moves word by word: the
+ * word being read turns fully dark and bold, the words around it fade in and
+ * out, and the rest stays light. The same helpers and settings as the
+ * teleprompter itself (src/lib/teleprompter/highlight.ts), so the two match.
+ * Bold is an outline around the letters, so lines never re-wrap.
+ */
+function wordStyle(position: number, current: number): CSSProperties {
+  const strength = emphasis(position, current + 0.5, highlight);
+  return {
+    // Every word has the full colour and its own opacity, so fading in and
+    // out is one smooth change.
+    opacity: wordOpacity(strength, highlight.dimOpacity),
+    WebkitTextStrokeWidth: strength > 0 ? `${(highlight.boldStrokeEm * strength).toFixed(4)}em` : 0,
+    // The demo steps a word at a time; a short fade makes it glide like the original.
+    transition: "opacity 200ms ease-out, -webkit-text-stroke-width 200ms ease-out",
+  };
+}
 
 function subscribeToMotion(onChange: () => void) {
   const query = window.matchMedia(REDUCED_MOTION);
@@ -115,7 +139,12 @@ export function TeleprompterDemo({
       </p>
       {/* The words change several times a second, so screen readers skip them. */}
       <div ref={viewportRef} aria-hidden="true" className="relative mt-6 h-52 overflow-hidden sm:h-56">
-        <div ref={textRef} className="relative transition-transform duration-500 ease-out motion-reduce:transition-none">
+        <div
+          ref={textRef}
+          className="relative transition-transform duration-500 ease-out motion-reduce:transition-none"
+          // Light text, darkened around the current word by wordStyle(), as in the real teleprompter.
+          style={{ color: `rgb(${TEXT_RGB})` }}
+        >
           {blocks.map((block, blockIndex) =>
             block.type === "heading" ? (
               <p
@@ -130,19 +159,7 @@ export function TeleprompterDemo({
                   const position = block.startWordIndex + wordIndex;
                   return (
                     <span key={wordIndex}>
-                      <span
-                        data-word={position}
-                        // A shadow, not padding or bold, so the line never reflows as the word moves.
-                        className={`rounded-[0.3em] transition-colors duration-200 ${
-                          position === index
-                            ? "bg-mint-50 text-ink shadow-[0_0_0_0.18em_var(--color-mint-50)]"
-                            : position < index
-                              ? "text-faint"
-                              : position < index + 6
-                                ? "text-ink-soft"
-                                : "text-muted"
-                        }`}
-                      >
+                      <span data-word={position} style={wordStyle(position, index)}>
                         {word}
                       </span>{" "}
                     </span>

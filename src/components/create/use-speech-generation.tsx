@@ -105,18 +105,28 @@ export function useSpeechGeneration() {
 export function GeneratingView({ speech, language }: { speech: StreamedSpeech; language: LanguageCode }) {
   const { blocks, wordCount } = parseSpeech(toMarkdown(speech));
   return (
-    <section aria-live="polite" aria-busy="true">
-      {wordCount === 0 ? (
-        <p role="status" className="text-lg">
-          Preparing your speaking session...
-        </p>
-      ) : (
+    <section aria-live="polite" aria-busy="true" className="rounded-card bg-surface p-6 shadow-card sm:p-10">
+      <p className="flex items-center gap-3 text-muted">
+        {/* A gentle pulse; still for people who prefer reduced motion. */}
+        <span aria-hidden="true" className="relative flex size-3">
+          <span className="absolute inset-0 rounded-full bg-mint-400 opacity-60 motion-safe:animate-ping" />
+          <span className="relative size-3 rounded-full bg-mint-700" />
+        </span>
+        {wordCount === 0 ? (
+          <span className="text-lg text-ink">Preparing your speaking session...</span>
+        ) : (
+          <span>
+            Writing your speech… <span className="font-medium text-ink tabular-nums">{wordCount} words</span> so far.
+            Please keep this page open.
+          </span>
+        )}
+      </p>
+      {wordCount > 0 && (
         <>
-          <p className="text-sm text-neutral-600">
-            Writing your speech… {wordCount} words so far. Please keep this page open.
-          </p>
-          {speech.title && <h2 className="mt-4 text-2xl font-bold tracking-tight">{speech.title}</h2>}
-          <div className="mt-4">
+          {speech.title && (
+            <h2 className="mt-8 text-3xl leading-tight font-semibold tracking-[-0.03em]">{speech.title}</h2>
+          )}
+          <div className="mt-6">
             <SpeechContent blocks={blocks} language={language} />
           </div>
         </>

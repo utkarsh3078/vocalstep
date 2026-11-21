@@ -1,14 +1,20 @@
 "use client";
 
+import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
 import { offeredLanguages, practice, type Difficulty, type LanguageCode } from "@/config/practice";
 import { generationErrorMessage } from "@/lib/speech/messages";
+import { wordTarget } from "@/lib/speech/targets";
 
 import { GeneratingView, useSpeechGeneration } from "./use-speech-generation";
 
 const { topic: topicRules } = practice;
+
+/** A choice drawn as a card or pill; the real radio input stays focusable for keyboards. */
+const choice =
+  "relative cursor-pointer rounded-2xl border border-line bg-surface transition-colors hover:border-faint has-checked:border-ink has-checked:bg-canvas has-checked:shadow-[inset_0_0_0_1px_var(--color-ink)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ink";
 
 /**
  * The Create form and the live view of a speech being written (see
@@ -18,12 +24,10 @@ export function CreateSpeech({
   initialTopic,
   defaultLanguage,
   defaultDifficulty,
-  freeLeft,
 }: {
   initialTopic: string;
   defaultLanguage: LanguageCode;
   defaultDifficulty: Difficulty;
-  freeLeft: number;
 }) {
   const [topic, setTopic] = useState(initialTopic);
   const [minutes, setMinutes] = useState<number>(practice.defaultDuration);
@@ -33,6 +37,7 @@ export function CreateSpeech({
   const { generating, speech, failure, generate } = useSpeechGeneration();
 
   const trimmed = topic.trim();
+  const { wpm } = practice.languages[language];
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,12 +52,12 @@ export function CreateSpeech({
   if (generating) return <GeneratingView speech={speech} language={language} />;
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-6">
+    <form onSubmit={submit} noValidate className="rounded-card bg-surface p-6 shadow-card sm:p-8">
       {failure && (
-        <div role="alert" className="rounded-md border border-red-300 bg-red-50 p-3 text-red-800">
+        <div role="alert" className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
           <p>{generationErrorMessage(failure.code, failure.reason)}</p>
           {failure.code === "unauthorized" && (
-            <Link href="/login?next=%2Fcreate" className="mt-2 inline-block underline underline-offset-4">
+            <Link href="/login?next=%2Fcreate" className="mt-2 inline-block font-medium underline underline-offset-4">
               Sign in
             </Link>
           )}
@@ -60,9 +65,12 @@ export function CreateSpeech({
       )}
 
       <div>
-        <label htmlFor="topic" className="block font-medium">
-          Topic
+        <label htmlFor="topic" className="block text-lg font-semibold tracking-tight">
+          Your topic
         </label>
+        <p id="topic-help" className="mt-1 text-sm text-muted">
+          Anything you&apos;d like to speak about or learn about.
+        </p>
         <textarea
           id="topic"
           name="topic"
@@ -72,26 +80,32 @@ export function CreateSpeech({
           onChange={(event) => setTopic(event.target.value)}
           placeholder="What would you like to speak about today?"
           aria-invalid={topicError ? true : undefined}
-          aria-describedby={`topic-count${topicError ? " topic-error" : ""}`}
-          className={`mt-1 block w-full rounded-md border px-3 py-2 text-lg ${topicError ? "border-red-600" : "border-neutral-400"}`}
+          aria-describedby={`topic-help topic-count${topicError ? " topic-error" : ""}`}
+          className={`mt-3 block w-full resize-y rounded-2xl border px-4 py-3 text-lg leading-relaxed placeholder:text-faint ${
+            topicError ? "border-red-600" : "border-line"
+          }`}
         />
-        <p id="topic-count" className="mt-1 text-sm text-neutral-600">
-          {trimmed.length} / {topicRules.maxLength} characters
-        </p>
-        {topicError && (
-          <p id="topic-error" className="mt-1 text-sm text-red-700">
-            {topicError}
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-2 text-sm">
+          {topicError ? (
+            <p id="topic-error" className="text-red-700">
+              {topicError}
+            </p>
+          ) : (
+            <span />
+          )}
+          <p id="topic-count" className="text-muted tabular-nums">
+            {trimmed.length} / {topicRules.maxLength} characters
           </p>
-        )}
+        </div>
 
-        <p className="mt-3 text-sm text-neutral-700">Or try one of these:</p>
+        <p className="mt-4 text-sm font-medium text-muted">Need an idea? Try one of these:</p>
         <ul className="mt-2 flex flex-wrap gap-2">
           {topicRules.examples.map((example) => (
             <li key={example}>
               <button
                 type="button"
                 onClick={() => setTopic(example)}
-                className="rounded-full border border-neutral-400 px-3 py-1 text-sm hover:bg-neutral-100"
+                className="rounded-full border border-line bg-canvas px-3 py-1.5 text-sm transition-colors hover:border-faint hover:bg-surface"
               >
                 {example}
               </button>
@@ -100,27 +114,41 @@ export function CreateSpeech({
         </ul>
       </div>
 
-      <fieldset>
-        <legend className="font-medium">How long do you want to speak?</legend>
-        <div className="mt-2 flex flex-wrap gap-4">
+      <fieldset className="mt-8">
+        <legend className="text-lg font-semibold tracking-tight">How long do you want to speak?</legend>
+        <div className="mt-3 grid grid-cols-3 gap-3">
           {practice.durations.map((duration) => (
-            <label key={duration} className="flex items-center gap-2">
+            <label key={duration} className={`${choice} px-4 py-4 text-center`}>
               <input
                 type="radio"
                 name="minutes"
                 value={duration}
                 checked={minutes === duration}
                 onChange={() => setMinutes(duration)}
+                className="sr-only"
               />
-              {duration} minutes
+              <span className="block text-2xl font-semibold tracking-tight tabular-nums">{duration}</span>
+              <span className="block text-sm text-muted">minutes</span>
+              <span className="mt-2 block text-xs text-muted tabular-nums">
+                <span className="hidden sm:inline">about </span>
+                {wordTarget(duration, wpm)} words
+              </span>
             </label>
           ))}
         </div>
       </fieldset>
 
-      <details className="rounded-md border border-neutral-300 p-3">
-        <summary className="cursor-pointer font-medium">More options</summary>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+      <details className="group mt-6 rounded-2xl border border-line">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-medium [&::-webkit-details-marker]:hidden">
+          <span>
+            More options{" "}
+            <span className="font-normal text-muted">· {practice.difficulties[difficulty].label}</span>
+          </span>
+          <span aria-hidden="true" className="text-muted transition-transform group-open:rotate-180">
+            ▾
+          </span>
+        </summary>
+        <div className="space-y-5 border-t border-line px-4 py-4">
           {/* With only one language offered there is nothing to choose. */}
           {offeredLanguages.length > 1 && (
             <div>
@@ -131,7 +159,7 @@ export function CreateSpeech({
                 id="language"
                 value={language}
                 onChange={(event) => setLanguage(event.target.value as LanguageCode)}
-                className="mt-1 block w-full rounded-md border border-neutral-400 px-3 py-2"
+                className="mt-2 block w-full rounded-xl border border-line px-3 py-2"
               >
                 {offeredLanguages.map((code) => (
                   <option key={code} value={code}>
@@ -141,36 +169,37 @@ export function CreateSpeech({
               </select>
             </div>
           )}
-          <div>
-            <label htmlFor="difficulty" className="block text-sm font-medium">
-              Difficulty
-            </label>
-            <select
-              id="difficulty"
-              value={difficulty}
-              onChange={(event) => setDifficulty(event.target.value as Difficulty)}
-              className="mt-1 block w-full rounded-md border border-neutral-400 px-3 py-2"
-            >
-              {Object.entries(practice.difficulties).map(([code, { label }]) => (
-                <option key={code} value={code}>
-                  {label}
-                </option>
+          <fieldset>
+            <legend className="text-sm font-medium">Difficulty</legend>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {(Object.keys(practice.difficulties) as Difficulty[]).map((code) => (
+                <label key={code} className={`${choice} rounded-full px-4 py-2 text-sm font-medium`}>
+                  <input
+                    type="radio"
+                    name="difficulty"
+                    value={code}
+                    checked={difficulty === code}
+                    onChange={() => setDifficulty(code)}
+                    className="sr-only"
+                  />
+                  {practice.difficulties[code].label}
+                </label>
               ))}
-            </select>
-          </div>
+            </div>
+          </fieldset>
         </div>
       </details>
 
-      <div>
+      <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
         <button
           type="submit"
-          className="w-full rounded-md bg-neutral-900 px-5 py-3 font-medium text-white hover:bg-neutral-700 sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 font-medium text-white transition-colors hover:bg-ink-soft sm:w-auto"
         >
+          <Sparkles aria-hidden="true" className="size-4" />
           Generate My Speech
         </button>
-        <p className="mt-2 text-sm text-neutral-600">
-          {freeLeft === 1 ? "1 free speech left." : `${freeLeft} free speeches left.`} Refused topics
-          and failed attempts don&apos;t count.
+        <p className="text-sm text-muted">
+          This uses 1 free speech. Refused topics and failed attempts don&apos;t count.
         </p>
       </div>
     </form>
