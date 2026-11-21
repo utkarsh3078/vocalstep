@@ -51,7 +51,11 @@ export function DeleteSpeechButton({
   }
 
   return (
-    <div role="group" aria-labelledby={`delete-${id}`} className="w-full rounded-md border border-red-300 bg-red-50 p-3">
+    <div
+      role="group"
+      aria-labelledby={`delete-${id}`}
+      className="w-full rounded-2xl border border-red-200 bg-red-50 px-4 py-3"
+    >
       <p id={`delete-${id}`} className="text-red-900">
         Delete “{title}”? You can&apos;t undo this. Your practice minutes and streak are kept.
       </p>
@@ -72,7 +76,7 @@ export function DeleteSpeechButton({
               else setError(result.error);
             })
           }
-          className="rounded-md bg-red-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-50"
+          className="rounded-full bg-red-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-800 disabled:opacity-50"
         >
           {pending ? "Deleting…" : "Yes, delete"}
         </button>
@@ -83,7 +87,7 @@ export function DeleteSpeechButton({
             returnFocus.current = true;
             setConfirming(false);
           }}
-          className="rounded-md border border-neutral-400 bg-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-100"
+          className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium transition-colors hover:border-faint"
         >
           Cancel
         </button>

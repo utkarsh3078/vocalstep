@@ -1,10 +1,12 @@
+import { ArrowLeft, ArrowRight, BookOpen, Check, FileText, Mic, Plus, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { DeleteSpeechButton } from "@/components/speech/delete-speech-button";
 import { PracticeLink } from "@/components/teleprompter/practice-link";
 import { practice } from "@/config/practice";
+import { samples } from "@/content/samples";
 import { requireUser } from "@/lib/auth/session";
 import { getHistoryPage, type HistoryEntry } from "@/lib/practice/data";
 import { formatPracticeTime, pageCount, parsePage, practiceStatusLabel } from "@/lib/practice/history";
@@ -17,24 +19,32 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-const STATUS_LABELS: Record<HistoryEntry["status"], string> = {
-  ready: "Ready",
-  generating: "Being written",
-  failed: "Couldn't be written",
-};
-
-const smallButton =
-  "inline-block rounded-md border border-neutral-400 px-3 py-1.5 text-sm font-medium hover:bg-neutral-100";
+const container = "mx-auto w-full max-w-6xl px-4 sm:px-6";
+const card = "rounded-card bg-surface shadow-card";
+const primaryButton =
+  "inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-white transition-colors hover:bg-ink-soft";
+const secondaryButton =
+  "inline-flex items-center justify-center gap-2 rounded-full border border-line bg-surface px-5 py-3 font-medium transition-colors hover:border-faint";
+const smallPrimary =
+  "inline-flex items-center justify-center rounded-full bg-ink px-4 py-2 text-sm font-medium whitespace-nowrap text-white transition-colors hover:bg-ink-soft";
+const smallSecondary =
+  "inline-flex items-center justify-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors hover:border-faint";
+const smallQuiet =
+  "inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-red-50 hover:text-red-700";
 
 export default function HistoryPage({ searchParams }: PageProps<"/history">) {
   return (
-    <section>
-      <h1 className="text-3xl font-bold tracking-tight">Your speeches</h1>
-      <p className="mt-2 text-neutral-700">Every speech you&apos;ve created, and how you&apos;ve practised it.</p>
-      <Suspense fallback={<p role="status" className="mt-6">Loading your speeches…</p>}>
+    <div data-layout="wide" className={`${container} pt-4 sm:pt-8`}>
+      <Suspense
+        fallback={
+          <p role="status" className={`${card} p-7 text-muted`}>
+            Loading your speeches…
+          </p>
+        }
+      >
         <History searchParams={searchParams} />
       </Suspense>
-    </section>
+    </div>
   );
 }
 
@@ -50,46 +60,66 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
     getProfileDefaults(supabase, user.id),
   ]);
 
+  const header = (
+    <header className="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <h1 className="text-3xl leading-tight font-semibold tracking-[-0.03em] sm:text-[2.6rem]">
+          Your speeches. <span className="text-faint">Read, practise or tidy up.</span>
+        </h1>
+        {history && history.total > 0 && (
+          <p className="mt-3 text-sm text-muted">
+            {history.total === 1 ? "1 speech" : `${history.total} speeches`}
+          </p>
+        )}
+      </div>
+      <Link href="/create" className={primaryButton}>
+        <Plus aria-hidden="true" className="size-4" />
+        Create a speech
+      </Link>
+    </header>
+  );
+
+  const deletedNotice = deleted && (
+    <p
+      role="status"
+      className="mt-6 flex items-center gap-2 rounded-2xl border border-mint-200 bg-mint-50 px-4 py-3 text-mint-700"
+    >
+      <Check aria-hidden="true" className="size-4 shrink-0" strokeWidth={2.5} />
+      The speech has been deleted. Your practice minutes and streak are kept.
+    </p>
+  );
+
   if (!history) {
     return (
-      <p role="alert" className="mt-6 rounded-md border border-red-300 bg-red-50 p-3 text-red-800">
-        We couldn&apos;t load your speeches just now. Please refresh the page.
-      </p>
+      <>
+        {header}
+        <p role="alert" className="mt-8 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-red-800">
+          We couldn&apos;t load your speeches just now. Please refresh the page.
+        </p>
+      </>
     );
   }
 
   const pages = pageCount(history.total, practice.lists.historyPageSize);
 
-  const deletedNotice = deleted && (
-    <p role="status" className="mt-6 rounded-md border border-green-300 bg-green-50 p-3 text-green-900">
-      The speech has been deleted. Your practice minutes and streak are kept.
-    </p>
-  );
-
   if (history.total === 0) {
     return (
-      <div className="mt-6 text-neutral-700">
+      <>
+        {header}
         {deletedNotice}
-        <p>You haven&apos;t created any speeches yet.</p>
-        <p className="mt-4">
-          <Link
-            href="/create"
-            className="inline-block rounded-md bg-neutral-900 px-5 py-3 font-medium text-white hover:bg-neutral-700"
-          >
-            Create your first speech
-          </Link>
-        </p>
-      </div>
+        <EmptyState />
+      </>
     );
   }
 
   if (history.entries.length === 0) {
     return (
       <>
+        {header}
         {deletedNotice}
-        <p className="mt-6 text-neutral-700">
+        <p className={`${card} mt-8 p-7 text-muted`}>
           There&apos;s nothing on this page.{" "}
-          <Link href={pageHref(pages)} className="underline underline-offset-4">
+          <Link href={pageHref(pages)} className="font-medium text-ink underline underline-offset-4">
             Go to the last page
           </Link>
         </p>
@@ -98,78 +128,38 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
   }
 
   const date = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: defaults.timezone });
-
   const afterDeleteHref = `${pageHref(page)}${page > 1 ? "&" : "?"}deleted=1`;
 
   return (
     <>
+      {header}
       {deletedNotice}
-      <p className="mt-6 text-sm text-neutral-600">
-        {history.total === 1 ? "1 speech" : `${history.total} speeches`}
-      </p>
-      <ul className="mt-3 space-y-3">
-        {history.entries.map((entry) => (
-          <li key={entry.id} className="rounded-md border border-neutral-300 p-3">
-            <Link href={`/speeches/${entry.id}`} className="font-medium underline underline-offset-4">
-              {entry.title || entry.topic}
-            </Link>
-            <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
-              <Detail label="Length" value={`${entry.targetMinutes} min`} />
-              {entry.status === "ready" ? (
-                <Detail label="Words" value={String(entry.wordCount)} />
-              ) : (
-                <Detail label="Status" value={STATUS_LABELS[entry.status]} />
-              )}
-              <Detail label="Created" value={date.format(new Date(entry.createdAt))} />
-              <Detail
-                label="Last practised"
-                value={entry.practice.lastPractisedAt ? date.format(new Date(entry.practice.lastPractisedAt)) : "Not yet"}
-              />
-              <Detail label="Practice" value={practiceStatusLabel(entry.practice)} />
-              <Detail label="Time spent" value={formatPracticeTime(entry.practice.activeSeconds)} />
-            </dl>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Link href={`/speeches/${entry.id}`} className={smallButton}>
-                Read
-              </Link>
-              {entry.status === "ready" && (
-                <PracticeLink
-                  speechId={`speech:${entry.id}:v${entry.version}`}
-                  wordCount={entry.wordCount}
-                  href={`/speeches/${entry.id}/practice`}
-                  session={entry.practice.open}
-                  startLabel={entry.practice.lastPractisedAt ? "Practise again" : "Practise"}
-                  className={smallButton}
-                />
-              )}
-              {entry.status !== "generating" && (
-                <DeleteSpeechButton
-                  id={entry.id}
-                  title={entry.title || entry.topic}
-                  afterDeleteHref={afterDeleteHref}
-                  className={smallButton}
-                />
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
+
+      <section aria-label="Speeches" className={`${card} mt-8 px-5 sm:px-7`}>
+        <ul className="divide-y divide-line">
+          {history.entries.map((entry) => (
+            <SpeechRow key={entry.id} entry={entry} date={date} afterDeleteHref={afterDeleteHref} />
+          ))}
+        </ul>
+      </section>
 
       {pages > 1 && (
         <nav aria-label="Pages" className="mt-6 flex items-center justify-between gap-4">
           {page > 1 ? (
-            <Link href={pageHref(page - 1)} rel="prev" className={smallButton}>
-              ← Newer
+            <Link href={pageHref(page - 1)} rel="prev" className={smallSecondary}>
+              <ArrowLeft aria-hidden="true" className="size-3.5" />
+              Newer
             </Link>
           ) : (
             <span />
           )}
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-muted">
             Page {page} of {pages}
           </p>
           {page < pages ? (
-            <Link href={pageHref(page + 1)} rel="next" className={smallButton}>
-              Older →
+            <Link href={pageHref(page + 1)} rel="next" className={smallSecondary}>
+              Older
+              <ArrowRight aria-hidden="true" className="size-3.5" />
             </Link>
           ) : (
             <span />
@@ -180,12 +170,151 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
   );
 }
 
+function SpeechRow({
+  entry,
+  date,
+  afterDeleteHref,
+}: {
+  entry: HistoryEntry;
+  date: Intl.DateTimeFormat;
+  afterDeleteHref: string;
+}) {
+  const title = entry.title || entry.topic;
+  const ready = entry.status === "ready";
+  const open = entry.practice.openProgress;
+
+  return (
+    <li className="py-5">
+      <div className="flex gap-4">
+        {/* Hidden on phones, where the width is better spent on the title and buttons. */}
+        <IconWell icon={ready ? Mic : FileText} className="hidden sm:flex" />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <Link
+              href={`/speeches/${entry.id}`}
+              className="text-lg font-semibold tracking-tight underline-offset-4 hover:underline"
+            >
+              {title}
+            </Link>
+            <StatusPill entry={entry} />
+          </div>
+
+          <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+            <Detail label="Length" value={`${entry.targetMinutes} min`} />
+            {ready && <Detail label="Words" value={String(entry.wordCount)} />}
+            <Detail label="Created" value={date.format(new Date(entry.createdAt))} />
+            {ready && (
+              <>
+                <Detail
+                  label="Last practised"
+                  value={entry.practice.lastPractisedAt ? date.format(new Date(entry.practice.lastPractisedAt)) : "Not yet"}
+                />
+                <Detail label="Time spent" value={formatPracticeTime(entry.practice.activeSeconds)} />
+              </>
+            )}
+          </dl>
+
+          {open !== null && (
+            <div aria-hidden="true" className="mt-3 h-1 max-w-56 overflow-hidden rounded-full bg-well">
+              <div className="h-full rounded-full bg-mint-700" style={{ width: `${open * 100}%` }} />
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {ready && (
+              <PracticeLink
+                speechId={`speech:${entry.id}:v${entry.version}`}
+                wordCount={entry.wordCount}
+                href={`/speeches/${entry.id}/practice`}
+                session={entry.practice.open}
+                startLabel={entry.practice.lastPractisedAt ? "Practise again" : "Practise"}
+                className={smallPrimary}
+              />
+            )}
+            <Link href={`/speeches/${entry.id}`} className={smallSecondary}>
+              Read
+            </Link>
+            {entry.status !== "generating" && (
+              <DeleteSpeechButton id={entry.id} title={title} afterDeleteHref={afterDeleteHref} className={smallQuiet} />
+            )}
+          </div>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/** The speech's state at a glance: how it was practised, or why it can't be yet. */
+function StatusPill({ entry }: { entry: HistoryEntry }) {
+  if (entry.status === "generating") return <Pill tone="neutral">Being written</Pill>;
+  if (entry.status === "failed") return <Pill tone="red">Couldn&apos;t be written</Pill>;
+
+  const label = practiceStatusLabel(entry.practice);
+  if (entry.practice.openProgress !== null) return <Pill tone="peach">{label}</Pill>;
+  if (entry.practice.timesCompleted > 0) {
+    return (
+      <Pill tone="mint">
+        <Check aria-hidden="true" className="size-3.5" strokeWidth={2.5} />
+        {label}
+      </Pill>
+    );
+  }
+  return <Pill tone="neutral">{label}</Pill>;
+}
+
+function Pill({ tone, children }: { tone: "mint" | "peach" | "neutral" | "red"; children: ReactNode }) {
+  const tones = {
+    mint: "border-mint-200 bg-mint-50 text-mint-700",
+    peach: "border-peach-200 bg-peach-50 text-peach-700",
+    neutral: "border-line bg-canvas text-ink-soft",
+    red: "border-red-200 bg-red-50 text-red-800",
+  };
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-sm font-medium ${tones[tone]}`}>
+      {children}
+    </span>
+  );
+}
+
 function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <dt className="text-neutral-600">{label}</dt>
-      <dd>{value}</dd>
+    <div className="flex gap-1.5">
+      <dt className="text-muted">{label}</dt>
+      <dd className="font-medium text-ink-soft">{value}</dd>
     </div>
+  );
+}
+
+function IconWell({ icon: Icon, className = "flex" }: { icon: LucideIcon; className?: string }) {
+  return (
+    <span aria-hidden="true" className={`${className} size-11 shrink-0 items-center justify-center rounded-full bg-well`}>
+      <Icon className="size-5" strokeWidth={1.75} />
+    </span>
+  );
+}
+
+function EmptyState() {
+  return (
+    <section className={`${card} mt-8 p-8 sm:p-12`}>
+      <IconWell icon={Mic} />
+      <h2 className="mt-6 text-2xl font-semibold tracking-tight">You haven&apos;t created any speeches yet.</h2>
+      <p className="mt-2 max-w-xl text-muted">
+        Pick a topic and a length, and we&apos;ll write a speech for you to read aloud. You can
+        practise a sample speech while you decide.
+      </p>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link href="/create" className={primaryButton}>
+          <Plus aria-hidden="true" className="size-4" />
+          Create your first speech
+        </Link>
+        {samples[0] && (
+          <Link href={`/samples/${samples[0].slug}`} className={secondaryButton}>
+            <BookOpen aria-hidden="true" className="size-4" />
+            Try a sample
+          </Link>
+        )}
+      </div>
+    </section>
   );
 }
 
