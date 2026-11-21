@@ -19,17 +19,23 @@ function subscribe(onChange: () => void) {
  * Progress comes from this browser and, for signed-in users, from their
  * unfinished session on the server (`session`), chosen the same way the
  * teleprompter chooses where to resume. Leave `session` out for guests.
+ *
+ * Lists pass a smaller `className` and their own `startLabel`.
  */
 export function PracticeLink({
   speechId,
   wordCount,
   href,
   session,
+  startLabel = "Start Teleprompter",
+  className = "inline-block rounded-md bg-neutral-900 px-5 py-3 font-medium text-white hover:bg-neutral-700",
 }: {
   speechId: string;
   wordCount: number;
   href: string;
   session?: OpenSession | null;
+  startLabel?: string;
+  className?: string;
 }) {
   const stored = useSyncExternalStore(
     subscribe,
@@ -54,13 +60,10 @@ export function PracticeLink({
   const resume = chooseResume(parseProgress(parsed, wordCount), session, wordCount);
   const label = resume
     ? `Resume (${formatPercent(progressAt(resume.wordIndex, wordCount))})`
-    : "Start Teleprompter";
+    : startLabel;
 
   return (
-    <Link
-      href={href}
-      className="inline-block rounded-md bg-neutral-900 px-5 py-3 font-medium text-white hover:bg-neutral-700"
-    >
+    <Link href={href} className={className}>
       {label}
     </Link>
   );

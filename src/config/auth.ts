@@ -14,11 +14,11 @@ export const auth = {
   },
 
   /** Where users land after signing in when there is no page to return to. */
-  defaultRedirect: "/account",
+  defaultRedirect: "/dashboard",
 
   /**
    * Address prefixes that need an account. The proxy sends signed-out visitors
    * to the login page, and each page checks the session again on the server.
    */
-  protectedPaths: ["/account", "/reset-password", "/create", "/speeches"],
+  protectedPaths: ["/account", "/dashboard", "/history", "/reset-password", "/create", "/speeches"],
 } as const;

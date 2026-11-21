@@ -98,8 +98,8 @@ export function FinishedScreen({
               <Link href="/create" className={secondaryButton}>
                 New topic
               </Link>
-              <Link href="/account" className={secondaryButton}>
-                Your progress
+              <Link href="/dashboard" className={secondaryButton}>
+                Dashboard
               </Link>
             </>
           ) : (

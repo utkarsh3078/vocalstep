@@ -22,8 +22,8 @@ export default function SpeechPage({ params }: PageProps<"/speeches/[id]">) {
   return (
     <article>
       <p>
-        <Link href="/create" className="text-sm underline underline-offset-4">
-          ← Create and your speeches
+        <Link href="/history" className="text-sm underline underline-offset-4">
+          ← Your speeches
         </Link>
       </p>
       <Suspense fallback={<p role="status" className="mt-4">Loading your speech…</p>}>

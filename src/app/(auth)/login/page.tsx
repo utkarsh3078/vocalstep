@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { GoogleButton } from "@/components/auth/google-button";
 import { LoginForm } from "@/components/auth/login-form";
 import { NotConfigured } from "@/components/auth/not-configured";
+import { auth } from "@/config/auth";
 import { safeNextPath } from "@/lib/auth/redirect";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/env/public";
@@ -44,7 +45,7 @@ async function Login({ searchParams }: Pick<PageProps<"/login">, "searchParams">
 
   const error = firstParam(params.error);
   const notice = error && Object.hasOwn(NOTICES, error) ? NOTICES[error] : undefined;
-  const signupHref = next === "/account" ? "/signup" : `/signup?next=${encodeURIComponent(next)}`;
+  const signupHref = next === auth.defaultRedirect ? "/signup" : `/signup?next=${encodeURIComponent(next)}`;
 
   return (
     <>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { CreateSpeech } from "@/components/create/create-speech";
@@ -39,7 +40,7 @@ async function Create({ searchParams }: Pick<PageProps<"/create">, "searchParams
   const [defaults, counts, speeches] = await Promise.all([
     getProfileDefaults(supabase, user.id),
     getQuotaCounts(supabase),
-    listRecentSpeeches(supabase),
+    listRecentSpeeches(supabase, 5),
   ]);
   const quota = counts ? checkQuota(counts) : null;
 
@@ -88,6 +89,13 @@ async function Create({ searchParams }: Pick<PageProps<"/create">, "searchParams
         <div className="mt-4">
           <SpeechList speeches={speeches} timezone={defaults.timezone} />
         </div>
+        {speeches && speeches.length > 0 && (
+          <p className="mt-4">
+            <Link href="/history" className="underline underline-offset-4">
+              All your speeches
+            </Link>
+          </p>
+        )}
       </section>
     </>
   );

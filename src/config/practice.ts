@@ -77,6 +77,31 @@ export const practice = {
     ],
   },
 
+  /**
+   * Suggested topics on the dashboard, by category. Each links to Create with
+   * the topic filled in. Keep them neutral and factual: they must pass the
+   * same topic rules as anything a user types.
+   */
+  suggestedTopics: [
+    { category: "Technology", topics: ["How smartphones changed daily life", "What artificial intelligence can and cannot do"] },
+    { category: "Science", topics: ["How rain forms", "Why the sky is blue"] },
+    { category: "Personal development", topics: ["Learning from mistakes", "How to build a morning routine"] },
+    { category: "Education", topics: ["Why learning a second language helps", "The value of asking questions in class"] },
+    { category: "Environment", topics: ["Why trees matter in cities", "Simple ways to save water at home"] },
+    { category: "Business", topics: ["How a small shop wins loyal customers", "What makes a good team leader"] },
+    { category: "History", topics: ["How the printing press changed the world", "The story of the Indian railways"] },
+    { category: "General knowledge", topics: ["How money came to be", "Why we have time zones"] },
+    { category: "Everyday life", topics: ["The joy of cooking at home", "What makes a good friend"] },
+  ],
+
+  /** The dashboard and history lists. */
+  lists: {
+    /** Recent practice sessions on the dashboard. */
+    recentSessions: 5,
+    /** Speeches per page of the history. */
+    historyPageSize: 10,
+  },
+
   generation: {
     /** Approximate size of one generated section. Fewer, larger sections mean fewer AI requests. */
     sectionWords: 400,

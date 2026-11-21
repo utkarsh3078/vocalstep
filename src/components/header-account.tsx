@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/env/public";
 
-/** The header's account links: Create and "Your account" when signed in; Sign in and Get started otherwise. */
+/** The header's account links: the signed-in pages; Sign in and Get started otherwise. */
 export async function HeaderAccount() {
   if (!isSupabaseConfigured()) return null;
 
@@ -25,12 +25,18 @@ export async function HeaderAccount() {
   }
 
   return (
-    <nav aria-label="Your account" className="flex items-center gap-4 text-sm">
+    <nav aria-label="Your account" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+      <Link href="/dashboard" className="underline underline-offset-4">
+        Dashboard
+      </Link>
+      <Link href="/history" className="underline underline-offset-4">
+        Your speeches
+      </Link>
       <Link href="/create" className="underline underline-offset-4">
-        Create a speech
+        Create
       </Link>
       <Link href="/account" className="underline underline-offset-4">
-        Your account
+        Account
       </Link>
     </nav>
   );

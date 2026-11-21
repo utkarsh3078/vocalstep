@@ -54,6 +54,10 @@ const FEATURES = [
     title: "Daily streaks",
     text: `With an account, see your minutes each day and keep a streak going: ${practice.tracking.streakMinMinutes} minutes a day counts.`,
   },
+  {
+    title: "Practice history",
+    text: "Every speech you create is kept, with when you last practised it and how much time you've spent.",
+  },
 ];
 
 export default function HomePage() {
@@ -115,9 +119,6 @@ export default function HomePage() {
             </li>
           ))}
         </ul>
-        <p className="mt-6 text-sm text-neutral-600">
-          Coming soon: your full practice history.
-        </p>
       </section>
 
       <section aria-labelledby="create-heading" className="mt-16">
