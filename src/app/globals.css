@@ -1,11 +1,56 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens. A soft grey canvas, white cards with large rounded corners,
+ * near-black ink, and two quiet accents: mint (progress, success) and peach
+ * (counts, highlights). Contrast, checked against WCAG AA:
+ *   ink on canvas 15:1 · muted on canvas 5.4:1, on white 6:1
+ *   faint on canvas 3:1: large text only (24px and up), never body text
+ *   mint-700 on mint-50 4.7:1 · peach-700 on peach-50 5:1
+ *   mint-400 is decorative only (lines, dots), never text.
+ */
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+
+  --color-canvas: #f3f3f2;
+  --color-surface: #ffffff;
+  --color-well: #ececeb;
+  --color-line: #e3e3e1;
+  --color-ink: #1c1c1c;
+  --color-ink-soft: #3d3d3d;
+  --color-muted: #636363;
+  --color-faint: #8c8c8c;
+
+  --color-mint-50: #e4f4ea;
+  --color-mint-200: #bfe5cf;
+  --color-mint-400: #6cc59a;
+  --color-mint-700: #1f7a4a;
+  --color-peach-50: #fbe3d4;
+  --color-peach-200: #f5c2a3;
+  --color-peach-700: #9c4a1a;
+
+  --radius-card: 1.75rem;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.04), 0 24px 48px -20px rgb(0 0 0 / 0.18);
+}
+
+@layer base {
+  /* Fields stay white on the grey canvas. */
+  input:not([type="radio"], [type="checkbox"]),
+  textarea,
+  select {
+    background-color: var(--color-surface);
+  }
 }
 
 /* One clear keyboard focus style for every link, button and control. */
 :focus-visible {
-  outline: 2px solid #1d4ed8;
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }

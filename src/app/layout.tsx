@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
 
 import { HeaderAccount } from "@/components/header-account";
+import { LogoMark } from "@/components/logo";
 import { site } from "@/config/site";
 import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -44,26 +45,29 @@ const FOOTER_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
+const navLink =
+  "rounded-full px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink";
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-white font-sans text-neutral-900">
-        <header className="border-b border-neutral-200">
-          <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-4">
-            <Link href="/" className="text-lg font-semibold">
+    <html
+      lang="en"
+      // Smooth scrolling for in-page links, but instant jumps between pages.
+      data-scroll-behavior="smooth"
+      className={`${inter.variable} h-full antialiased`}
+    >
+      <body className="flex min-h-full flex-col bg-canvas font-sans text-ink">
+        <header>
+          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-6">
+            <Link href="/" className="flex items-center gap-2.5 rounded-lg text-lg font-semibold tracking-tight">
+              <LogoMark />
               {site.name}
             </Link>
-            <nav aria-label="Main" className="flex gap-4 text-sm">
-              <Link
-                href="/#how-it-works"
-                className="hover:underline hover:underline-offset-4"
-              >
+            <nav aria-label="Main" className="flex gap-1 text-sm">
+              <Link href="/#how-it-works" className={navLink}>
                 How it works
               </Link>
-              <Link
-                href="/#features"
-                className="hover:underline hover:underline-offset-4"
-              >
+              <Link href="/#features" className={navLink}>
                 Features
               </Link>
             </nav>
@@ -76,29 +80,37 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
+        {/* Pages sit in a narrow column. A page that brings its own full-width
+            layout marks its outer element data-layout="wide" (the home page). */}
+        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 has-[>[data-layout=wide]]:max-w-none has-[>[data-layout=wide]]:p-0">
           {children}
         </main>
 
-        <footer className="border-t border-neutral-200">
-          <div className="mx-auto w-full max-w-3xl px-4 py-6 text-sm text-neutral-600">
-            <nav aria-label="Site">
-              <ul className="flex flex-wrap gap-x-5 gap-y-2">
-                {FOOTER_LINKS.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="underline underline-offset-4"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            <p className="mt-4">
-              © {site.launchYear} {site.name} · {site.tagline}
-            </p>
+        <footer className="mt-16 border-t border-line">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 text-sm sm:flex-row sm:items-start sm:justify-between sm:px-6">
+            <div>
+              <p className="flex items-center gap-2 font-semibold text-ink">
+                <LogoMark className="size-6" />
+                {site.name}
+              </p>
+              <p className="mt-2 text-muted">{site.tagline}</p>
+            </div>
+            <div className="sm:text-right">
+              <nav aria-label="Site">
+                <ul className="flex flex-wrap gap-x-5 gap-y-2 sm:justify-end">
+                  {FOOTER_LINKS.map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href} className="text-muted hover:text-ink hover:underline hover:underline-offset-4">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+              <p className="mt-4 text-muted">
+                © {site.launchYear} {site.name}
+              </p>
+            </div>
           </div>
         </footer>
         <Analytics />
