@@ -6,7 +6,7 @@ for you, and read it aloud in a distraction-free teleprompter — a few minutes 
 Live at [vocalstep.in](https://vocalstep.in).
 
 - Guests can practise 3 sample speeches with no account.
-- With an account, users generate speeches (5, 10 or 15 minutes, English or Hindi):
+- With an account, users generate speeches (5, 10 or 15 minutes, in English; Hindi is switched off for now, see `offered` in `src/config/practice.ts`):
   2 free per account.
 - The teleprompter scrolls at a set words-per-minute, highlights the word being read,
   and remembers your place.

@@ -8,6 +8,7 @@
  *   faint on canvas 3:1: large text only (24px and up), never body text
  *   mint-700 on mint-50 4.7:1 · peach-700 on peach-50 5:1
  *   mint-400 is decorative only (lines, dots), never text.
+ *   mint-700 also colours chart marks (validated: 3:1 or more on white).
  */
 @theme inline {
   --font-sans: var(--font-inter);

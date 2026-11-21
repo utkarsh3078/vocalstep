@@ -15,6 +15,12 @@ const PROGRESS_PREFIX = "vocalstep:teleprompter:progress:";
 
 export interface TeleprompterSettings {
   theme: TeleprompterTheme;
+  /**
+   * True once the visitor has picked a theme with the theme button. Every
+   * setting is saved together, so without this a theme saved only because it
+   * was the old default would look like a choice.
+   */
+  themeChosen?: boolean;
   /** Text size in CSS pixels. */
   fontSize: number;
   /** Line spacing as a multiple of the text size. */
@@ -57,13 +63,15 @@ export function parseSettings(raw: unknown, defaultWpm: number): TeleprompterSet
   const settings = defaultSettings(defaultWpm);
   if (!isRecord(raw)) return settings;
 
-  const { fontSize, lineHeight, theme, wpm } = raw;
+  const { fontSize, lineHeight, theme, themeChosen, wpm } = raw;
   const { min, max } = teleprompter.fontSize;
   const themes: readonly string[] = teleprompter.themes;
   const lineHeights: readonly number[] = teleprompter.lineHeights;
 
-  if (typeof theme === "string" && themes.includes(theme)) {
+  // Only a theme the visitor picked; otherwise the current default applies.
+  if (themeChosen === true && typeof theme === "string" && themes.includes(theme)) {
     settings.theme = theme as TeleprompterTheme;
+    settings.themeChosen = true;
   }
   if (isFiniteNumber(fontSize) && fontSize >= min && fontSize <= max) {
     settings.fontSize = Math.round(fontSize);

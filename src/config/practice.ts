@@ -13,10 +13,15 @@ export const practice = {
    * `tokensPerWord` sizes the AI's output budget; Devanagari needs more tokens
    * per word than English. The Hindi figures are starting points; tune them after
    * real testing.
+   *
+   * `offered` decides whether new speeches can be written in the language.
+   * A language that is not offered stays here, so speeches already written
+   * in it still display and practise correctly.
    */
   languages: {
-    en: { label: "English", wpm: 130, tokensPerWord: 1.6 },
-    hi: { label: "Hindi", wpm: 130, tokensPerWord: 4 },
+    en: { label: "English", wpm: 130, tokensPerWord: 1.6, offered: true },
+    // Switched off for now (2026-11-21). Set `offered: true` to bring it back.
+    hi: { label: "Hindi", wpm: 130, tokensPerWord: 4, offered: false },
   },
   defaultLanguage: "en",
 
@@ -167,5 +172,14 @@ export const practice = {
 
 export type Duration = (typeof practice.durations)[number];
 export type LanguageCode = keyof typeof practice.languages;
+
+/** Languages new speeches can be written in, in config order. */
+export const offeredLanguages = (Object.keys(practice.languages) as LanguageCode[]).filter(
+  (code) => practice.languages[code].offered,
+);
+
+export function isOfferedLanguage(value: unknown): value is LanguageCode {
+  return typeof value === "string" && (offeredLanguages as readonly string[]).includes(value);
+}
 export type Difficulty = keyof typeof practice.difficulties;
 export type RefusalReason = keyof typeof practice.refusalReasons;

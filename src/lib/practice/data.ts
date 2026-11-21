@@ -15,7 +15,7 @@ import {
   type SpeechPractice,
 } from "./history";
 import type { OpenSession } from "./resume";
-import { localDate, summarisePractice, type PracticeStats } from "./streaks";
+import { localDate, recentDays, summarisePractice, type DayTotal, type PracticeStats } from "./streaks";
 import type { PracticeTarget } from "./target";
 
 /** Reads for practice tracking, made as the signed-in user (RLS applies). */
@@ -59,9 +59,21 @@ export async function getOpenSession(
   };
 }
 
-/** The user's minutes, sessions and streaks, or null if they could not be read. */
-export async function getPracticeStats(supabase: Supabase, userId: string): Promise<PracticeStats | null> {
-  const [days, profile] = await Promise.all([
+/** The dashboard's numbers: totals, streaks, and practice on each recent day. */
+export interface PracticeOverview {
+  stats: PracticeStats;
+  /** The last days up to today, oldest first. */
+  days: DayTotal[];
+  /** Practice in the last 7 days, today included. */
+  weekSeconds: number;
+}
+
+/** How many days the dashboard chart shows. */
+const CHART_DAYS = 14;
+
+/** The user's totals, streaks and recent days, or null if they could not be read. */
+export async function getPracticeOverview(supabase: Supabase, userId: string): Promise<PracticeOverview | null> {
+  const [rows, profile] = await Promise.all([
     supabase
       .from("daily_practice")
       .select("practice_date, seconds, sessions")
@@ -69,16 +81,24 @@ export async function getPracticeStats(supabase: Supabase, userId: string): Prom
       .limit(5000),
     supabase.from("profiles").select("timezone").eq("id", userId).maybeSingle(),
   ]);
-  if (days.error) {
-    console.error("Could not load practice totals:", days.error.code, days.error.message);
+  if (rows.error) {
+    console.error("Could not load practice totals:", rows.error.code, rows.error.message);
     return null;
   }
 
   const today = localDate(profile.data?.timezone ?? "Asia/Kolkata", new Date());
-  return summarisePractice(
-    days.data.map((row) => ({ date: row.practice_date, seconds: row.seconds, sessions: row.sessions })),
-    today,
-  );
+  const days = rows.data.map((row) => ({ date: row.practice_date, seconds: row.seconds, sessions: row.sessions }));
+  const chart = recentDays(days, today, CHART_DAYS);
+  return {
+    stats: summarisePractice(days, today),
+    days: chart,
+    weekSeconds: chart.slice(-7).reduce((total, day) => total + day.seconds, 0),
+  };
+}
+
+/** The user's minutes, sessions and streaks, or null if they could not be read. */
+export async function getPracticeStats(supabase: Supabase, userId: string): Promise<PracticeStats | null> {
+  return (await getPracticeOverview(supabase, userId))?.stats ?? null;
 }
 
 /** Where a recent session can be practised again, or null when its speech is gone. */

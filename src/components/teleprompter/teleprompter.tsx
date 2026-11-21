@@ -822,7 +822,10 @@ function TeleprompterScreen({
             })
           }
           onToggleTheme={() =>
-            updateSettings({ theme: settingsRef.current.theme === "dark" ? "light" : "dark" })
+            updateSettings({
+              theme: settingsRef.current.theme === "dark" ? "light" : "dark",
+              themeChosen: true,
+            })
           }
           onToggleFullscreen={toggleFullscreen}
           onFinish={finish}

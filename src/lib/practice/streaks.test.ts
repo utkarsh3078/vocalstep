@@ -6,6 +6,8 @@ import {
   formatDays,
   formatMinutes,
   localDate,
+  recentDays,
+  splitDuration,
   summarisePractice,
   type PracticeDay,
 } from "./streaks";
@@ -111,5 +113,29 @@ describe("formatting", () => {
     expect(formatDays(1)).toBe("1 day");
     expect(formatDays(0)).toBe("0 days");
     expect(formatDays(12)).toBe("12 days");
+  });
+});
+
+describe("recentDays", () => {
+  it("lists the last days up to today, oldest first, with gaps as 0", () => {
+    expect(recentDays([day("2026-11-21", 5), day("2026-11-19", 3), day("2026-11-01", 9)], "2026-11-21", 4)).toEqual([
+      { date: "2026-11-18", seconds: 0 },
+      { date: "2026-11-19", seconds: 180 },
+      { date: "2026-11-20", seconds: 0 },
+      { date: "2026-11-21", seconds: 300 },
+    ]);
+  });
+
+  it("crosses month ends", () => {
+    expect(recentDays([], "2026-12-01", 2).map((d) => d.date)).toEqual(["2026-11-30", "2026-12-01"]);
+  });
+});
+
+describe("splitDuration", () => {
+  it("splits a time into a big number and its unit", () => {
+    expect(splitDuration(0)).toEqual({ value: "0", unit: "min" });
+    expect(splitDuration(59 * 60 + 59)).toEqual({ value: "59", unit: "min" });
+    expect(splitDuration(60 * 60)).toEqual({ value: "1", unit: "h" });
+    expect(splitDuration(125 * 60)).toEqual({ value: "2", unit: "h 5 min" });
   });
 });

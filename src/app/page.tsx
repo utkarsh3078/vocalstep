@@ -24,7 +24,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { TeleprompterDemo } from "@/components/home/teleprompter-demo";
-import { practice } from "@/config/practice";
+import { offeredLanguages, practice } from "@/config/practice";
 import { getAllSamples, type Sample } from "@/lib/samples";
 import { excerptBlocks } from "@/lib/teleprompter/demo";
 
@@ -32,9 +32,7 @@ import { excerptBlocks } from "@/lib/teleprompter/demo";
 const durationList = practice.durations.join(", ").replace(/, (\d+)$/, " or $1");
 /** "5–15", for the big number. */
 const durationRange = `${Math.min(...practice.durations)}–${Math.max(...practice.durations)}`;
-const languageList = Object.values(practice.languages)
-  .map((language) => language.label)
-  .join(" and ");
+const languageList = offeredLanguages.map((code) => practice.languages[code].label).join(" and ");
 
 const STEPS: { title: string; text: string; icon: LucideIcon }[] = [
   {
@@ -77,8 +75,11 @@ const FEATURES: { title: string; text: string; icon: LucideIcon }[] = [
     icon: Gauge,
   },
   {
-    title: languageList,
-    text: "Practise in English, or in Hindi written in natural Devanagari.",
+    title: offeredLanguages.length > 1 ? languageList : `Natural, spoken ${languageList}`,
+    text:
+      offeredLanguages.length > 1
+        ? `Choose ${languageList} for each speech.`
+        : `Scripts are written in conversational ${languageList}, with short sentences that are easy to read aloud.`,
     icon: Languages,
   },
   {

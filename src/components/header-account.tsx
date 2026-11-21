@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { NavLink } from "@/components/nav-link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/env/public";
 
@@ -28,18 +29,13 @@ export async function HeaderAccount() {
 
   return (
     <nav aria-label="Your account" className="flex flex-wrap items-center gap-1 text-sm">
-      <Link href="/dashboard" className={pill}>
-        Dashboard
-      </Link>
-      <Link href="/history" className={pill}>
+      <NavLink href="/dashboard">Dashboard</NavLink>
+      {/* A speech's own pages belong with the list of speeches. */}
+      <NavLink href="/history" match={["/history", "/speeches"]}>
         Your speeches
-      </Link>
-      <Link href="/create" className={pill}>
-        Create
-      </Link>
-      <Link href="/account" className={pill}>
-        Account
-      </Link>
+      </NavLink>
+      <NavLink href="/create">Create</NavLink>
+      <NavLink href="/account">Account</NavLink>
     </nav>
   );
 }

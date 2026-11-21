@@ -11,8 +11,17 @@ describe("parseSettings", () => {
   });
 
   it("keeps valid stored values", () => {
-    const stored = { theme: "light", fontSize: 48, lineHeight: 1.7, wpm: 150 };
+    const stored = { theme: "dark", themeChosen: true, fontSize: 48, lineHeight: 1.7, wpm: 150 };
     expect(parseSettings(stored, 130)).toEqual(stored);
+  });
+
+  it("starts light, to match the site", () => {
+    expect(defaultSettings(130).theme).toBe("light");
+  });
+
+  it("ignores a theme saved without being chosen (the old dark default)", () => {
+    const parsed = parseSettings({ theme: "dark", fontSize: 48, lineHeight: 1.7, wpm: 150 }, 130);
+    expect(parsed).toEqual({ ...defaultSettings(130), fontSize: 48, lineHeight: 1.7, wpm: 150 });
   });
 
   it("replaces only the invalid fields", () => {

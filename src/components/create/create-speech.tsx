@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
-import { practice, type Difficulty, type LanguageCode } from "@/config/practice";
+import { offeredLanguages, practice, type Difficulty, type LanguageCode } from "@/config/practice";
 import { generationErrorMessage } from "@/lib/speech/messages";
 
 import { GeneratingView, useSpeechGeneration } from "./use-speech-generation";
@@ -121,23 +121,26 @@ export function CreateSpeech({
       <details className="rounded-md border border-neutral-300 p-3">
         <summary className="cursor-pointer font-medium">More options</summary>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="language" className="block text-sm font-medium">
-              Language
-            </label>
-            <select
-              id="language"
-              value={language}
-              onChange={(event) => setLanguage(event.target.value as LanguageCode)}
-              className="mt-1 block w-full rounded-md border border-neutral-400 px-3 py-2"
-            >
-              {Object.entries(practice.languages).map(([code, { label }]) => (
-                <option key={code} value={code}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* With only one language offered there is nothing to choose. */}
+          {offeredLanguages.length > 1 && (
+            <div>
+              <label htmlFor="language" className="block text-sm font-medium">
+                Language
+              </label>
+              <select
+                id="language"
+                value={language}
+                onChange={(event) => setLanguage(event.target.value as LanguageCode)}
+                className="mt-1 block w-full rounded-md border border-neutral-400 px-3 py-2"
+              >
+                {offeredLanguages.map((code) => (
+                  <option key={code} value={code}>
+                    {practice.languages[code].label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label htmlFor="difficulty" className="block text-sm font-medium">
               Difficulty

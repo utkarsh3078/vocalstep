@@ -1,6 +1,6 @@
 import "server-only";
 
-import { practice, type Difficulty, type LanguageCode } from "@/config/practice";
+import { isOfferedLanguage, practice, type Difficulty, type LanguageCode } from "@/config/practice";
 import type { createClient } from "@/lib/supabase/server";
 
 import type { QuotaCounts } from "./quota";
@@ -40,7 +40,7 @@ export async function getProfileDefaults(supabase: Supabase, userId: string): Pr
     .maybeSingle();
 
   return {
-    language: isLanguage(data?.last_language) ? data.last_language : practice.defaultLanguage,
+    language: isOfferedLanguage(data?.last_language) ? data.last_language : practice.defaultLanguage,
     difficulty: isDifficulty(data?.last_difficulty) ? data.last_difficulty : practice.defaultDifficulty,
     timezone: data?.timezone ?? "Asia/Kolkata",
   };

@@ -97,3 +97,29 @@ export function formatMinutes(seconds: number): string {
 export function formatDays(days: number): string {
   return days === 1 ? "1 day" : `${days} days`;
 }
+
+/** One day in a chart: its date and practice, oldest first. */
+export interface DayTotal {
+  date: string;
+  seconds: number;
+}
+
+/** The last `count` days up to `today`, oldest first, with days not practised as 0. */
+export function recentDays(days: readonly PracticeDay[], today: string, count: number): DayTotal[] {
+  const byDate = new Map(days.map((day) => [day.date, day.seconds]));
+  return Array.from({ length: count }, (_, i) => {
+    const date = addDays(today, i - count + 1);
+    return { date, seconds: byDate.get(date) ?? 0 };
+  });
+}
+
+/**
+ * Practice time for a big number: the number and its unit separately.
+ * "42" "min", or "2" "h 5 min" once it reaches an hour. Rounded down to the minute.
+ */
+export function splitDuration(seconds: number): { value: string; unit: string } {
+  const minutes = Math.floor(Math.max(0, seconds) / 60);
+  if (minutes < 60) return { value: String(minutes), unit: "min" };
+  const rest = minutes % 60;
+  return { value: String(Math.floor(minutes / 60)), unit: rest === 0 ? "h" : `h ${rest} min` };
+}

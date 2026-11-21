@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { RegenerateSpeech } from "@/components/speech/regenerate-speech";
-import { practice } from "@/config/practice";
+import { isOfferedLanguage, practice } from "@/config/practice";
 import { requireUser } from "@/lib/auth/session";
 import { getAiEnv } from "@/lib/env/server";
 import { getQuotaCounts, getSpeech, wasPractised } from "@/lib/speech/data";
@@ -44,7 +44,14 @@ async function Regenerate({ params }: { params: Promise<{ id: string }> }) {
     : speech.difficulty;
 
   let main;
-  if (!getAiEnv()) {
+  if (!isOfferedLanguage(speech.language)) {
+    main = (
+      <p role="status" className="rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900">
+        New speeches in {languageLabel} can&apos;t be written right now. This speech stays yours to
+        practise as often as you like.
+      </p>
+    );
+  } else if (!getAiEnv()) {
     main = (
       <p role="status" className="rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900">
         Writing new speeches isn&apos;t switched on yet.

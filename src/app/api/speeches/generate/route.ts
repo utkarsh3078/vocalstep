@@ -1,7 +1,14 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 
-import { practice, type Difficulty, type LanguageCode, type RefusalReason } from "@/config/practice";
+import {
+  isOfferedLanguage,
+  offeredLanguages,
+  practice,
+  type Difficulty,
+  type LanguageCode,
+  type RefusalReason,
+} from "@/config/practice";
 import { cleanTopic, screenTopic } from "@/lib/ai/guardrails";
 import { getSpeechWriter } from "@/lib/ai/provider";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -21,7 +28,8 @@ import { createClient } from "@/lib/supabase/server";
  */
 export const maxDuration = 300;
 
-const languages = Object.keys(practice.languages) as [LanguageCode, ...LanguageCode[]];
+/** New speeches only in offered languages (a speech in another still displays). */
+const languages = offeredLanguages as [LanguageCode, ...LanguageCode[]];
 const difficulties = Object.keys(practice.difficulties) as [Difficulty, ...Difficulty[]];
 
 const durationSchema = z.number().refine((value) => (practice.durations as readonly number[]).includes(value));
@@ -95,7 +103,11 @@ export async function POST(request: NextRequest) {
     const old = await getSpeech(supabase, parsed.data.replaces);
     if (!old || old.status !== "ready") return errorResponse("invalid");
     const difficulty = old.difficulty as Difficulty;
-    if (!durationSchema.safeParse(old.targetMinutes).success || !Object.hasOwn(practice.difficulties, difficulty)) {
+    if (
+      !durationSchema.safeParse(old.targetMinutes).success ||
+      !Object.hasOwn(practice.difficulties, difficulty) ||
+      !isOfferedLanguage(old.language)
+    ) {
       return errorResponse("invalid");
     }
     settings = { topic: old.topic, minutes: old.targetMinutes, language: old.language, difficulty };

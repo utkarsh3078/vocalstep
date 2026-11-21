@@ -14,7 +14,11 @@ export const teleprompter = {
   defaultLineHeight: 1.5,
 
   themes: ["dark", "light"],
-  defaultTheme: "dark",
+  /**
+   * Light, to match the site, which is light only for now. A visitor's own
+   * choice from the theme button is kept (see storage.ts).
+   */
+  defaultTheme: "light",
 
   /**
    * Between paragraphs and past headings there is nothing to read, so the text
