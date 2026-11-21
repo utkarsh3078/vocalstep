@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { AuthShell } from "@/components/auth/auth-shell";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { requireUser } from "@/lib/auth/session";
 
@@ -12,14 +13,11 @@ export const metadata: Metadata = {
 /** Reached from the reset email, whose link signs the user in first. */
 export default function ResetPasswordPage() {
   return (
-    <section className="mx-auto max-w-sm">
-      <h1 className="text-3xl font-bold tracking-tight">Choose a new password</h1>
-      <div className="mt-6">
-        <Suspense fallback={<p role="status">Loading…</p>}>
-          <ResetPassword />
-        </Suspense>
-      </div>
-    </section>
+    <AuthShell title="Choose a new password." intro="The link in your email has signed you in. Choose a new password to finish.">
+      <Suspense fallback={<p role="status" className="text-muted">Loading…</p>}>
+        <ResetPassword />
+      </Suspense>
+    </AuthShell>
   );
 }
 

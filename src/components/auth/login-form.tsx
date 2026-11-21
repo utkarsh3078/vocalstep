@@ -32,8 +32,8 @@ export function LoginForm({ next, notice }: { next: string; notice?: string }) {
         error={state.fieldErrors?.password}
       />
       <SubmitButton label="Sign in" pendingLabel="Signing in…" />
-      <p className="text-sm">
-        <Link href="/forgot-password" className="underline underline-offset-4">
+      <p className="text-center text-sm">
+        <Link href="/forgot-password" className="text-muted underline-offset-4 hover:text-ink hover:underline">
           Forgot your password?
         </Link>
       </p>

@@ -1,3 +1,16 @@
+import {
+  Flag,
+  Maximize,
+  Minimize,
+  Minus,
+  Moon,
+  Pause,
+  Play,
+  Plus,
+  RotateCcw,
+  SlidersHorizontal,
+  Sun,
+} from "lucide-react";
 import type { MouseEvent, ReactNode } from "react";
 
 import { practice } from "@/config/practice";
@@ -29,15 +42,36 @@ interface ControlsProps {
   onPointerPress: () => void;
 }
 
+/**
+ * The teleprompter's controls: one floating bar, with display settings in a
+ * panel above it. Buttons with an icon keep their name as text (hidden on
+ * phones to save room), so screen readers and shortcuts' hints stay the same.
+ */
 export function TeleprompterControls(props: ControlsProps) {
   const { status, settings, canFinish, showDisplay } = props;
   const dark = settings.theme === "dark";
   const { fontSize, lineHeights, speed } = teleprompter;
 
+  const tone = {
+    bar: dark ? "border-neutral-800 bg-neutral-900/95 shadow-black/40" : "border-line bg-surface",
+    button: dark ? "text-neutral-100 hover:bg-neutral-800" : "text-ink hover:bg-well",
+    primary: dark ? "bg-white text-neutral-950 hover:bg-neutral-200" : "bg-ink text-white hover:bg-ink-soft",
+    muted: dark ? "text-neutral-400" : "text-muted",
+    divider: dark ? "bg-neutral-800" : "bg-line",
+    focus: dark ? "focus-visible:outline-white" : "focus-visible:outline-ink",
+  };
+
   const button = (
     label: ReactNode,
     onPress: () => void,
-    options: { name?: string; disabled?: boolean; primary?: boolean; pressed?: boolean; title?: string } = {},
+    options: {
+      name?: string;
+      disabled?: boolean;
+      primary?: boolean;
+      pressed?: boolean;
+      title?: string;
+      round?: boolean;
+    } = {},
   ) => (
     <button
       type="button"
@@ -51,84 +85,131 @@ export function TeleprompterControls(props: ControlsProps) {
         if (event.detail > 0) props.onPointerPress();
       }}
       className={[
-        "min-h-11 min-w-11 rounded-md border px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40",
-        options.primary
-          ? dark
-            ? "border-white bg-white text-neutral-950 hover:bg-neutral-200"
-            : "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-700"
-          : dark
-            ? "border-neutral-600 hover:bg-neutral-800"
-            : "border-neutral-300 hover:bg-neutral-100",
+        "inline-flex min-h-11 items-center justify-center gap-2 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-35",
+        tone.focus,
+        options.round ? "min-w-11" : "px-4",
+        options.primary ? `${tone.primary} px-6` : tone.button,
+        options.pressed ? (dark ? "bg-neutral-800" : "bg-well") : "",
       ].join(" ")}
     >
       {label}
     </button>
   );
 
-  const playLabel =
-    status === "playing" ? "Pause" : status === "paused" ? "Resume" : "Start";
+  /** An icon with its name as text; the text hides on phones but stays for screen readers. */
+  const labelled = (icon: ReactNode, text: string) => (
+    <>
+      {icon}
+      <span className="max-sm:sr-only">{text}</span>
+    </>
+  );
+
+  const playLabel = status === "playing" ? "Pause" : status === "paused" ? "Resume" : "Start";
+  const iconClass = "size-4 shrink-0";
 
   return (
-    <div
-      className={`border-t px-3 py-2 ${dark ? "border-neutral-800 bg-neutral-900" : "border-neutral-200 bg-neutral-50"}`}
-    >
+    <div className="px-3 pt-2 pb-3 sm:pb-5">
       {showDisplay && (
         <div
           id="teleprompter-display-settings"
           role="group"
           aria-label="Display settings"
-          className="mx-auto mb-2 flex max-w-3xl flex-wrap items-center gap-x-6 gap-y-2 text-sm"
+          className={`mx-auto mb-2 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-3xl border px-4 py-3 text-sm shadow-lg ${tone.bar}`}
         >
-          <div className="flex items-center gap-2">
-            <span>Text size</span>
-            {button("−", () => props.onFontSize(-1), {
+          <div className="flex items-center gap-1">
+            <span className={`mr-1 ${tone.muted}`}>Text size</span>
+            {button(<Minus aria-hidden="true" className={iconClass} />, () => props.onFontSize(-1), {
               name: "Smaller text",
               disabled: settings.fontSize <= fontSize.min,
+              round: true,
             })}
             <span className="w-12 text-center tabular-nums">{settings.fontSize}px</span>
-            {button("+", () => props.onFontSize(1), {
+            {button(<Plus aria-hidden="true" className={iconClass} />, () => props.onFontSize(1), {
               name: "Larger text",
               disabled: settings.fontSize >= fontSize.max,
+              round: true,
             })}
           </div>
-          <div className="flex items-center gap-2">
-            <span>Line spacing</span>
-            {button("−", () => props.onLineHeight(-1), {
+          <div className="flex items-center gap-1">
+            <span className={`mr-1 ${tone.muted}`}>Line spacing</span>
+            {button(<Minus aria-hidden="true" className={iconClass} />, () => props.onLineHeight(-1), {
               name: "Less line spacing",
               disabled: settings.lineHeight <= lineHeights[0],
+              round: true,
             })}
             <span className="w-8 text-center tabular-nums">{settings.lineHeight}</span>
-            {button("+", () => props.onLineHeight(1), {
+            {button(<Plus aria-hidden="true" className={iconClass} />, () => props.onLineHeight(1), {
               name: "More line spacing",
               disabled: settings.lineHeight >= lineHeights[lineHeights.length - 1],
+              round: true,
             })}
           </div>
-          {button(dark ? "Light mode" : "Dark mode", props.onToggleTheme)}
+          {button(
+            <>
+              {dark ? (
+                <Sun aria-hidden="true" className={iconClass} />
+              ) : (
+                <Moon aria-hidden="true" className={iconClass} />
+              )}
+              {dark ? "Light mode" : "Dark mode"}
+            </>,
+            props.onToggleTheme,
+          )}
         </div>
       )}
 
-      <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2">
-        {button(playLabel, props.onTogglePlay, { primary: true, title: `${playLabel} (Space)` })}
-        {button("Restart", props.onRestart)}
+      <div
+        className={`mx-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-[2rem] border p-1.5 shadow-lg ${tone.bar}`}
+      >
+        {button(labelled(<RotateCcw aria-hidden="true" className={iconClass} />, "Restart"), props.onRestart)}
 
-        <div className="flex items-center gap-1" role="group" aria-label="Reading speed">
-          {button("−", () => props.onSpeed(-1), {
+        <span aria-hidden="true" className={`mx-1 hidden h-6 w-px sm:block ${tone.divider}`} />
+
+        <div className="flex items-center" role="group" aria-label="Reading speed">
+          {button(<Minus aria-hidden="true" className={iconClass} />, () => props.onSpeed(-1), {
             name: "Slower (Down arrow)",
             disabled: settings.wpm <= speed.min,
+            round: true,
           })}
-          <span className="w-20 text-center text-sm tabular-nums" aria-live="polite">
+          <span className="w-[4.5rem] text-center text-sm font-medium tabular-nums" aria-live="polite">
             {settings.wpm} wpm
           </span>
-          {button("+", () => props.onSpeed(1), {
+          {button(<Plus aria-hidden="true" className={iconClass} />, () => props.onSpeed(1), {
             name: "Faster (Up arrow)",
             disabled: settings.wpm >= speed.max,
+            round: true,
           })}
         </div>
 
-        {button("Display", props.onToggleDisplay, { pressed: showDisplay })}
+        {button(
+          <>
+            {status === "playing" ? (
+              <Pause aria-hidden="true" className={iconClass} fill="currentColor" />
+            ) : (
+              <Play aria-hidden="true" className={iconClass} fill="currentColor" />
+            )}
+            {playLabel}
+          </>,
+          props.onTogglePlay,
+          { primary: true, title: `${playLabel} (Space)` },
+        )}
+
+        {button(labelled(<SlidersHorizontal aria-hidden="true" className={iconClass} />, "Display"), props.onToggleDisplay, {
+          pressed: showDisplay,
+        })}
         {props.fullscreenSupported &&
-          button(props.isFullscreen ? "Exit full screen" : "Full screen", props.onToggleFullscreen)}
-        {button("Finish", props.onFinish, {
+          button(
+            labelled(
+              props.isFullscreen ? (
+                <Minimize aria-hidden="true" className={iconClass} />
+              ) : (
+                <Maximize aria-hidden="true" className={iconClass} />
+              ),
+              props.isFullscreen ? "Exit full screen" : "Full screen",
+            ),
+            props.onToggleFullscreen,
+          )}
+        {button(labelled(<Flag aria-hidden="true" className={iconClass} />, "Finish"), props.onFinish, {
           disabled: !canFinish,
           title: canFinish
             ? "Finish this session"

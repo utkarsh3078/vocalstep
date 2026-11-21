@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { AuthShell } from "@/components/auth/auth-shell";
 import { GoogleButton } from "@/components/auth/google-button";
 import { NotConfigured } from "@/components/auth/not-configured";
 import { SignupForm } from "@/components/auth/signup-form";
@@ -19,18 +20,16 @@ export const metadata: Metadata = {
 
 export default function SignupPage({ searchParams }: PageProps<"/signup">) {
   return (
-    <section className="mx-auto max-w-sm">
-      <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
-      <p className="mt-2 text-neutral-700">
-        An account lets you generate {practice.limits.freeSpeeches} free speeches on topics you
-        choose.
-      </p>
-      <div className="mt-6">
-        <Suspense fallback={<p role="status">Loading…</p>}>
-          <Signup searchParams={searchParams} />
-        </Suspense>
-      </div>
-    </section>
+    <AuthShell
+      title="Create an account."
+      faint="It's free."
+      intro={`An account lets you generate ${practice.limits.freeSpeeches} free speeches on topics you choose.`}
+      aside
+    >
+      <Suspense fallback={<p role="status" className="text-muted">Loading…</p>}>
+        <Signup searchParams={searchParams} />
+      </Suspense>
+    </AuthShell>
   );
 }
 
@@ -45,9 +44,9 @@ async function Signup({ searchParams }: Pick<PageProps<"/signup">, "searchParams
     <>
       <SignupForm next={next} />
       <GoogleButton next={next} />
-      <p className="mt-8 text-neutral-700">
+      <p className="mt-8 border-t border-line pt-6 text-center text-sm text-muted">
         Already have an account?{" "}
-        <Link href="/login" className="underline underline-offset-4">
+        <Link href="/login" className="font-medium text-ink underline underline-offset-4">
           Sign in
         </Link>
       </p>

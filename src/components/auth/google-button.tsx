@@ -7,10 +7,15 @@ export function GoogleButton({ next }: { next: string }) {
 
   return (
     <form action={signInWithGoogle} className="mt-6">
+      <p aria-hidden="true" className="mb-6 flex items-center gap-3 text-sm text-muted">
+        <span className="h-px flex-1 bg-line" />
+        or
+        <span className="h-px flex-1 bg-line" />
+      </p>
       <input type="hidden" name="next" value={next} />
       <button
         type="submit"
-        className="w-full rounded-md border border-neutral-400 px-5 py-3 font-medium hover:bg-neutral-100"
+        className="w-full rounded-full border border-line bg-surface px-5 py-3.5 font-medium transition-colors hover:border-faint"
       >
         Continue with Google
       </button>

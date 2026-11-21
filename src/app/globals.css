@@ -44,10 +44,16 @@
   }
 }
 
-/* One clear keyboard focus style for every link, button and control. */
-:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 2px;
+/*
+ * One clear keyboard focus style for every link, button and control. In the
+ * base layer, so a component can adjust it with utility classes (unlayered CSS
+ * would always win over them).
+ */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

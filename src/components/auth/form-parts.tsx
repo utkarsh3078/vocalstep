@@ -21,11 +21,11 @@ export function Field({
 
   return (
     <div>
-      <label htmlFor={id} className="block font-medium">
+      <label htmlFor={id} className="block text-sm font-medium">
         {label}
       </label>
       {hint && (
-        <p id={`${id}-hint`} className="mt-1 text-sm text-neutral-600">
+        <p id={`${id}-hint`} className="mt-1 text-sm text-muted">
           {hint}
         </p>
       )}
@@ -34,11 +34,11 @@ export function Field({
         name={name}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy || undefined}
-        className={`mt-1 block w-full rounded-md border px-3 py-2 ${error ? "border-red-600" : "border-neutral-400"}`}
+        className={`mt-2 block w-full rounded-xl border px-4 py-3 placeholder:text-faint ${error ? "border-red-600" : "border-line"}`}
         {...input}
       />
       {error && (
-        <p id={`${id}-error`} className="mt-1 text-sm text-red-700">
+        <p id={`${id}-error`} className="mt-1.5 text-sm text-red-700">
           {error}
         </p>
       )}
@@ -53,7 +53,7 @@ export function SubmitButton({ label, pendingLabel }: { label: string; pendingLa
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-md bg-neutral-900 px-5 py-3 font-medium text-white hover:bg-neutral-700 disabled:opacity-60"
+      className="w-full rounded-full bg-ink px-5 py-3.5 font-medium text-white transition-colors hover:bg-ink-soft disabled:opacity-60"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -64,14 +64,14 @@ export function SubmitButton({ label, pendingLabel }: { label: string; pendingLa
 export function FormMessage({ error, message }: { error?: string; message?: string }) {
   if (error) {
     return (
-      <p role="alert" className="rounded-md border border-red-300 bg-red-50 p-3 text-red-800">
+      <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
         {error}
       </p>
     );
   }
   if (message) {
     return (
-      <p role="status" className="rounded-md border border-green-300 bg-green-50 p-3 text-green-900">
+      <p role="status" className="rounded-2xl border border-mint-200 bg-mint-50 px-4 py-3 text-mint-700">
         {message}
       </p>
     );

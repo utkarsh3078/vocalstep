@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -703,6 +704,8 @@ function TeleprompterScreen({
   const lineHeightPx = settings.fontSize * settings.lineHeight;
   const progress = progressAt(display.position, wordCount);
   const remaining = remainingSeconds(display.position, wordCount, settings.wpm);
+  const pill = dark ? "bg-neutral-900" : "bg-canvas";
+  const mutedText = dark ? "text-neutral-400" : "text-muted";
 
   return (
     <div
@@ -717,30 +720,32 @@ function TeleprompterScreen({
         } as CSSProperties
       }
     >
-      <header
-        className={`border-b px-3 py-2 text-sm ${dark ? "border-neutral-800 bg-neutral-900" : "border-neutral-200 bg-neutral-50"}`}
-      >
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-x-4 gap-y-1">
-          <h1 className="min-w-0 flex-1 truncate font-semibold">{title}</h1>
-          <dl className="flex gap-4 tabular-nums">
-            <div className="flex gap-1">
-              <dt className="opacity-70">Elapsed</dt>
-              <dd>{formatClock(display.activeSeconds)}</dd>
+      <header className="px-3 pt-3 pb-2 text-sm sm:px-5">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-2">
+          {/* Its own line on phones, so the stats don't squeeze it to nothing. */}
+          <h1 className="w-full min-w-0 truncate font-semibold sm:w-auto sm:flex-1">{title}</h1>
+          <dl className="flex gap-1.5 tabular-nums">
+            <div className={`flex gap-1.5 rounded-full px-3 py-1.5 ${pill}`}>
+              <dt className={mutedText}>Elapsed</dt>
+              <dd className="font-medium">{formatClock(display.activeSeconds)}</dd>
             </div>
-            <div className="flex gap-1">
-              <dt className="opacity-70">Left</dt>
-              <dd>{formatClock(remaining)}</dd>
+            <div className={`flex gap-1.5 rounded-full px-3 py-1.5 ${pill}`}>
+              <dt className={mutedText}>Left</dt>
+              <dd className="font-medium">{formatClock(remaining)}</dd>
             </div>
-            <div className="flex gap-1">
+            <div className={`flex rounded-full px-3 py-1.5 ${pill}`}>
               <dt className="sr-only">Progress</dt>
-              <dd>{formatPercent(progress)}</dd>
+              <dd className="font-medium">{formatPercent(progress)}</dd>
             </div>
           </dl>
           <Link
             href={exitHref}
             title="Exit (Esc)"
-            className={`rounded-md border px-3 py-1.5 font-medium ${dark ? "border-neutral-600 hover:bg-neutral-800" : "border-neutral-300 hover:bg-neutral-100"}`}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 font-medium transition-colors ${
+              dark ? "border-neutral-700 hover:bg-neutral-800" : "border-line bg-surface hover:bg-well"
+            }`}
           >
+            <X aria-hidden="true" className="size-4" />
             Exit
           </Link>
         </div>
@@ -752,10 +757,10 @@ function TeleprompterScreen({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.floor(progress * 100)}
-        className={`h-1 ${dark ? "bg-neutral-800" : "bg-neutral-200"}`}
+        className={`mx-auto h-1 w-full max-w-5xl overflow-hidden rounded-full sm:w-[calc(100%-2.5rem)] ${dark ? "bg-neutral-800" : "bg-well"}`}
       >
         <div
-          className={`h-full ${dark ? "bg-sky-400" : "bg-sky-600"}`}
+          className={`h-full rounded-full ${dark ? "bg-mint-400" : "bg-mint-700"}`}
           style={{ width: `${progress * 100}%` }}
         />
       </div>
@@ -765,7 +770,8 @@ function TeleprompterScreen({
           ref={scrollerRef}
           tabIndex={0}
           aria-label="Speech text"
-          className="absolute inset-0 overflow-y-auto overscroll-contain focus-visible:outline-offset-[-4px]"
+          // Focused on arrival so Space and the arrows work at once; a thin outline, not a heavy frame.
+          className={`absolute inset-0 overflow-y-auto overscroll-contain focus-visible:outline-1 focus-visible:outline-offset-[-4px] ${dark ? "focus-visible:outline-neutral-600" : "focus-visible:outline-faint"}`}
         >
           <div
             ref={contentRef}
@@ -784,7 +790,7 @@ function TeleprompterScreen({
 
         {status === "ready" && (
           <p
-            className={`pointer-events-none absolute inset-x-0 bottom-2 px-3 text-center text-sm ${dark ? "text-neutral-400" : "text-neutral-600"}`}
+            className={`pointer-events-none absolute inset-x-0 bottom-2 px-3 text-center text-sm ${mutedText}`}
           >
             Press Start or the Space bar when you are ready, and read the dark word as it moves along.
           </p>

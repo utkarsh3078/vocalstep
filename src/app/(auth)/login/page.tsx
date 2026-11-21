@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { AuthShell } from "@/components/auth/auth-shell";
 import { GoogleButton } from "@/components/auth/google-button";
 import { LoginForm } from "@/components/auth/login-form";
 import { NotConfigured } from "@/components/auth/not-configured";
@@ -25,14 +26,11 @@ const NOTICES: Record<string, string> = {
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <section className="mx-auto max-w-sm">
-      <h1 className="text-3xl font-bold tracking-tight">Sign in</h1>
-      <div className="mt-6">
-        <Suspense fallback={<p role="status">Loading…</p>}>
-          <Login searchParams={searchParams} />
-        </Suspense>
-      </div>
-    </section>
+    <AuthShell title="Sign in." faint="Welcome back." intro="Pick up where you left off." aside>
+      <Suspense fallback={<p role="status" className="text-muted">Loading…</p>}>
+        <Login searchParams={searchParams} />
+      </Suspense>
+    </AuthShell>
   );
 }
 
@@ -51,9 +49,9 @@ async function Login({ searchParams }: Pick<PageProps<"/login">, "searchParams">
     <>
       <LoginForm next={next} notice={notice} />
       <GoogleButton next={next} />
-      <p className="mt-8 text-neutral-700">
+      <p className="mt-8 border-t border-line pt-6 text-center text-sm text-muted">
         New to VocalStep?{" "}
-        <Link href={signupHref} className="underline underline-offset-4">
+        <Link href={signupHref} className="font-medium text-ink underline underline-offset-4">
           Create an account
         </Link>
       </p>

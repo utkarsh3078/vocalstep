@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
@@ -27,8 +28,11 @@ export function FinishedScreen({
     headingRef.current?.focus();
   }, []);
 
-  const muted = dark ? "text-neutral-300" : "text-neutral-700";
-  const secondaryButton = `rounded-md border px-5 py-3 font-medium ${dark ? "border-neutral-600 hover:bg-neutral-800" : "border-neutral-300 hover:bg-neutral-100"}`;
+  const muted = dark ? "text-neutral-300" : "text-muted";
+  const secondaryButton = `inline-flex items-center justify-center rounded-full border px-5 py-3 font-medium transition-colors ${
+    dark ? "border-neutral-700 hover:bg-neutral-800" : "border-line bg-surface hover:border-faint"
+  }`;
+  const tile = `rounded-2xl px-4 py-4 ${dark ? "bg-neutral-900" : "bg-canvas"}`;
   const signedIn = totals.state !== "guest";
 
   return (
@@ -36,31 +40,38 @@ export function FinishedScreen({
       aria-labelledby="finished-heading"
       className={`absolute inset-0 z-10 flex items-center justify-center overflow-y-auto px-4 py-10 ${dark ? "bg-neutral-950" : "bg-white"}`}
     >
-      <div className="w-full max-w-md text-center">
+      <div className="w-full max-w-lg text-center">
+        <span
+          aria-hidden="true"
+          className={`mx-auto mb-6 flex size-14 items-center justify-center rounded-full ${dark ? "bg-mint-400/15 text-mint-400" : "bg-mint-50 text-mint-700"}`}
+        >
+          <Check className="size-7" strokeWidth={2.5} />
+        </span>
         <h2
           id="finished-heading"
           ref={headingRef}
           tabIndex={-1}
-          className="text-3xl font-bold tracking-tight"
+          className="text-3xl font-semibold tracking-[-0.03em] outline-none sm:text-4xl"
         >
           Well done!
         </h2>
         <p className={`mt-3 ${muted}`}>You finished “{title}”.</p>
 
-        <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
+        {/* Full width on phones; on wider screens each tile keeps its size, centred (a guest has just one). */}
+        <dl className="mt-8 flex flex-wrap justify-center gap-3 [&>div]:min-w-40 [&>div]:flex-1 sm:[&>div]:flex-none">
+          <div className={tile}>
             <dt className="text-sm tracking-wide uppercase opacity-70">Time spoken</dt>
             <dd className="mt-1 text-3xl font-semibold tabular-nums">{formatClock(activeSeconds)}</dd>
           </div>
           {signedIn && (
             <>
-              <div>
+              <div className={tile}>
                 <dt className="text-sm tracking-wide uppercase opacity-70">Today</dt>
                 <dd className="mt-1 text-3xl font-semibold tabular-nums">
                   {totals.state === "ready" ? formatMinutes(totals.stats.todaySeconds) : "–"}
                 </dd>
               </div>
-              <div>
+              <div className={tile}>
                 <dt className="text-sm tracking-wide uppercase opacity-70">Streak</dt>
                 <dd className="mt-1 text-3xl font-semibold tabular-nums">
                   {totals.state === "ready" ? formatDays(totals.stats.currentStreak) : "–"}
@@ -89,7 +100,7 @@ export function FinishedScreen({
           <button
             type="button"
             onClick={onPractiseAgain}
-            className={`rounded-md px-5 py-3 font-medium ${dark ? "bg-white text-neutral-950 hover:bg-neutral-200" : "bg-neutral-900 text-white hover:bg-neutral-700"}`}
+            className={`inline-flex items-center justify-center rounded-full px-6 py-3 font-medium transition-colors ${dark ? "bg-white text-neutral-950 hover:bg-neutral-200" : "bg-ink text-white hover:bg-ink-soft"}`}
           >
             Practise again
           </button>
