@@ -1,5 +1,6 @@
 "use client";
 
+import { RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 import { GeneratingView, useSpeechGeneration } from "@/components/create/use-speech-generation";
@@ -15,12 +16,12 @@ export function RegenerateSpeech({ speechId, language }: { speechId: string; lan
   return (
     <div className="space-y-4">
       {failure && (
-        <div role="alert" className="rounded-md border border-red-300 bg-red-50 p-3 text-red-800">
+        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
           <p>{generationErrorMessage(failure.code, failure.reason)}</p>
           {failure.code === "unauthorized" && (
             <Link
               href={`/login?next=${encodeURIComponent(`/speeches/${speechId}/regenerate`)}`}
-              className="mt-2 inline-block underline underline-offset-4"
+              className="mt-2 inline-block font-medium underline underline-offset-4"
             >
               Sign in
             </Link>
@@ -31,13 +32,14 @@ export function RegenerateSpeech({ speechId, language }: { speechId: string; lan
         <button
           type="button"
           onClick={() => void generate({ replaces: speechId })}
-          className="rounded-md bg-neutral-900 px-5 py-3 font-medium text-white hover:bg-neutral-700"
+          className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-white transition-colors hover:bg-ink-soft"
         >
+          <RefreshCw aria-hidden="true" className="size-4" />
           Write a new version
         </button>
         <Link
           href={`/speeches/${speechId}`}
-          className="rounded-md border border-neutral-400 px-5 py-3 font-medium hover:bg-neutral-100"
+          className="inline-flex items-center rounded-full border border-line bg-surface px-5 py-3 font-medium transition-colors hover:border-faint"
         >
           Cancel
         </Link>

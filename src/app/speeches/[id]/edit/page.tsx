@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -16,8 +17,14 @@ export const metadata: Metadata = {
 
 export default function EditSpeechPage({ params }: PageProps<"/speeches/[id]/edit">) {
   return (
-    <section>
-      <Suspense fallback={<p role="status">Loading your speech…</p>}>
+    <section data-layout="wide" className="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6 sm:pt-8">
+      <Suspense
+        fallback={
+          <p role="status" className="rounded-card bg-surface p-7 text-muted shadow-card">
+            Loading your speech…
+          </p>
+        }
+      >
         <Edit params={params} />
       </Suspense>
     </section>
@@ -36,13 +43,19 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
   return (
     <>
       <p>
-        <Link href={`/speeches/${speech.id}`} className="text-sm underline underline-offset-4">
-          ← Back to the speech
+        <Link
+          href={`/speeches/${speech.id}`}
+          className="inline-flex items-center gap-1.5 rounded-full py-1 text-sm text-muted transition-colors hover:text-ink"
+        >
+          <ArrowLeft aria-hidden="true" className="size-4" />
+          Back to the speech
         </Link>
       </p>
-      <h1 className="mt-4 text-3xl font-bold tracking-tight">Edit your speech</h1>
-      <p className="mt-2 text-neutral-700">Topic: {speech.topic}</p>
-      <div className="mt-6">
+      <h1 className="mt-6 text-3xl leading-tight font-semibold tracking-[-0.03em] sm:text-[2.6rem]">
+        Edit your speech. <span className="text-faint">Make it yours.</span>
+      </h1>
+      <p className="mt-3 text-muted">Topic: {speech.topic}</p>
+      <div className="mt-8">
         <EditSpeechForm
           id={speech.id}
           version={speech.version}

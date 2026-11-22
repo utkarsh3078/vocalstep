@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 // with someone qualified), then remove `draft` from <LegalPage>.
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy" draft>
+    <LegalPage title="Privacy Policy" path="/privacy" draft>
       <p>
         This page explains what {site.name} stores about you and why. In short: only what is needed
         to run your account and your practice, and no advertising or tracking.

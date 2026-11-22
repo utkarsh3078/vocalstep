@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 // Owner: a plain-language draft. Review it, then remove `draft` from <LegalPage>.
 export default function TermsPage() {
   return (
-    <LegalPage title="Terms of Use" draft>
+    <LegalPage title="Terms of Use" path="/terms" draft>
       <p>By using {site.name}, you agree to these terms.</p>
 
       <h2>What the service is for</h2>

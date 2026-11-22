@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 // Owner: replace or extend this text as you like.
 export default function AboutPage() {
   return (
-    <LegalPage title={`About ${site.name}`}>
+    <LegalPage title={`About ${site.name}`} path="/about" intro={site.tagline}>
       <p>
         {site.name} is a personal speaking-practice tool. You choose a topic, get a natural,
         conversational script of the length you want, and read it aloud in a full-screen
