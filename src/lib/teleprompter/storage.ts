@@ -1,4 +1,5 @@
 import { teleprompter, type TeleprompterTheme } from "@/config/teleprompter";
+import { currentTheme } from "@/lib/theme";
 
 import { clampSpeed } from "./timing";
 
@@ -137,7 +138,10 @@ export function progressKey(speechId: string): string {
 }
 
 export function loadSettings(defaultWpm: number): TeleprompterSettings {
-  return parseSettings(readJson(SETTINGS_KEY), defaultWpm);
+  const settings = parseSettings(readJson(SETTINGS_KEY), defaultWpm);
+  // Until the visitor picks one with the theme button, match the site.
+  if (!settings.themeChosen) settings.theme = currentTheme();
+  return settings;
 }
 
 export function saveSettings(settings: TeleprompterSettings): void {

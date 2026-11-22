@@ -54,7 +54,7 @@ export function EditSpeechForm({
 
       <div className="space-y-6">
         {state.error && (
-          <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+          <p role="alert" className="rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-danger-800">
             {state.error}
           </p>
         )}
@@ -90,13 +90,13 @@ export function EditSpeechForm({
             aria-describedby="content-help content-count"
             aria-invalid={checked.ok ? undefined : true}
             className={`mt-2 block w-full resize-y rounded-2xl border px-4 py-3 text-lg leading-8 text-ink-soft ${
-              checked.ok ? "border-line" : "border-red-600"
+              checked.ok ? "border-line" : "border-danger-600"
             }`}
           />
           <p
             id="content-count"
             aria-live="polite"
-            className={`mt-2 text-sm ${checked.ok ? "text-muted" : "text-red-700"}`}
+            className={`mt-2 text-sm ${checked.ok ? "text-muted" : "text-danger-700"}`}
           >
             {wordCount !== null
               ? `${wordCount} words · ${speakingTime} at ${wpm} words per minute`
@@ -125,7 +125,7 @@ export function EditSpeechForm({
             <button
               type="submit"
               disabled={pending || !checked.ok}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-white transition-colors hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-on-ink transition-colors hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Save aria-hidden="true" className="size-4" />
               {pending ? "Saving…" : "Save changes"}

@@ -5,7 +5,9 @@ import { Suspense } from "react";
 
 import { HeaderAccount } from "@/components/header-account";
 import { LogoMark } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { site } from "@/config/site";
+import { themeScript } from "@/lib/theme";
 import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
@@ -55,7 +57,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // Smooth scrolling for in-page links, but instant jumps between pages.
       data-scroll-behavior="smooth"
       className={`${inter.variable} h-full antialiased`}
+      // The theme script below adds data-theme before React loads.
+      suppressHydrationWarning
     >
+      <head>
+        {/* Sets the light or dark theme before the first paint (src/lib/theme.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-full flex-col bg-canvas font-sans text-ink">
         <header>
           <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-6">
@@ -71,11 +79,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 Features
               </Link>
             </nav>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1">
               {/* Reads the session, so it streams in without holding up the page. */}
               <Suspense fallback={null}>
                 <HeaderAccount />
               </Suspense>
+              <ThemeToggle />
             </div>
           </div>
         </header>

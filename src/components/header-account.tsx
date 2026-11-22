@@ -19,7 +19,7 @@ export async function HeaderAccount() {
         </Link>
         <Link
           href="/signup"
-          className="rounded-full bg-ink px-4 py-2 font-medium text-white transition-colors hover:bg-ink-soft"
+          className="rounded-full bg-ink px-4 py-2 font-medium text-on-ink transition-colors hover:bg-ink-soft"
         >
           Get started
         </Link>

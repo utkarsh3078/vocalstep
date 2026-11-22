@@ -92,7 +92,7 @@ async function Dashboard() {
           )}
           <Link
             href="/create"
-            className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-white transition-colors hover:bg-ink-soft"
+            className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-on-ink transition-colors hover:bg-ink-soft"
           >
             <Plus aria-hidden="true" className="size-4" />
             Start New Practice
@@ -128,7 +128,7 @@ async function Dashboard() {
           {overview ? (
             <ActivityChart days={overview.days} />
           ) : (
-            <p role="alert" className="mt-4 text-red-800">
+            <p role="alert" className="mt-4 text-danger-800">
               We couldn&apos;t load your practice just now. Please refresh the page.
             </p>
           )}
@@ -154,7 +154,7 @@ function Overview({ overview }: { overview: PracticeOverview | null }) {
           </p>
         </>
       ) : (
-        <p role="alert" className="m-6 rounded-xl border border-red-300 bg-red-50 p-3 text-red-800 sm:m-7">
+        <p role="alert" className="m-6 rounded-xl border border-danger-200 bg-danger-50 p-3 text-danger-800 sm:m-7">
           We couldn&apos;t load your practice totals just now. Please refresh the page.
         </p>
       )}
@@ -367,7 +367,7 @@ function ActivityChart({ days }: { days: DayTotal[] }) {
 function Tooltip({ align, day }: { align: string; day: DayTotal }) {
   return (
     <span
-      className={`pointer-events-none absolute bottom-full mb-2 rounded-lg bg-ink px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 ${align}`}
+      className={`pointer-events-none absolute bottom-full mb-2 rounded-lg bg-ink px-2 py-1 text-xs whitespace-nowrap text-on-ink opacity-0 transition-opacity group-hover:opacity-100 ${align}`}
     >
       {weekday.format(asDate(day.date))} {dayMonth.format(asDate(day.date))} · {formatMinutes(day.seconds)}
     </span>
@@ -377,7 +377,7 @@ function Tooltip({ align, day }: { align: string; day: DayTotal }) {
 function RecentPracticeList({ recent, timezone }: { recent: RecentPractice[] | null; timezone: string }) {
   if (recent === null) {
     return (
-      <p role="alert" className="text-red-800">
+      <p role="alert" className="text-danger-800">
         We couldn&apos;t load your recent practice. Please refresh the page.
       </p>
     );

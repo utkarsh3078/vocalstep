@@ -55,7 +55,7 @@ export function TeleprompterControls(props: ControlsProps) {
   const tone = {
     bar: dark ? "border-neutral-800 bg-neutral-900/95 shadow-black/40" : "border-line bg-surface",
     button: dark ? "text-neutral-100 hover:bg-neutral-800" : "text-ink hover:bg-well",
-    primary: dark ? "bg-white text-neutral-950 hover:bg-neutral-200" : "bg-ink text-white hover:bg-ink-soft",
+    primary: dark ? "bg-white text-neutral-950 hover:bg-neutral-200" : "bg-ink text-on-ink hover:bg-ink-soft",
     muted: dark ? "text-neutral-400" : "text-muted",
     divider: dark ? "bg-neutral-800" : "bg-line",
     focus: dark ? "focus-visible:outline-white" : "focus-visible:outline-ink",

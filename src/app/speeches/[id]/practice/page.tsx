@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function SpeechPracticePage({ params }: PageProps<"/speeches/[id]/practice">) {
   return (
-    <Suspense fallback={<p role="status" className="text-neutral-600">Loading the teleprompter…</p>}>
+    <Suspense fallback={<p role="status" className="text-muted">Loading the teleprompter…</p>}>
       <Practice params={params} />
     </Suspense>
   );

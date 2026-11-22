@@ -14,7 +14,7 @@ const { topic: topicRules } = practice;
 
 /** A choice drawn as a card or pill; the real radio input stays focusable for keyboards. */
 const choice =
-  "relative cursor-pointer rounded-2xl border border-line bg-surface transition-colors hover:border-faint has-checked:border-ink has-checked:bg-canvas has-checked:shadow-[inset_0_0_0_1px_var(--color-ink)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ink";
+  "relative cursor-pointer rounded-2xl border border-line bg-surface transition-colors hover:border-faint has-checked:border-ink has-checked:bg-canvas has-checked:shadow-[inset_0_0_0_1px_var(--vs-ink)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ink";
 
 /**
  * The Create form and the live view of a speech being written (see
@@ -54,7 +54,7 @@ export function CreateSpeech({
   return (
     <form onSubmit={submit} noValidate className="rounded-card bg-surface p-6 shadow-card sm:p-8">
       {failure && (
-        <div role="alert" className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+        <div role="alert" className="mb-6 rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-danger-800">
           <p>{generationErrorMessage(failure.code, failure.reason)}</p>
           {failure.code === "unauthorized" && (
             <Link href="/login?next=%2Fcreate" className="mt-2 inline-block font-medium underline underline-offset-4">
@@ -82,12 +82,12 @@ export function CreateSpeech({
           aria-invalid={topicError ? true : undefined}
           aria-describedby={`topic-help topic-count${topicError ? " topic-error" : ""}`}
           className={`mt-3 block w-full resize-y rounded-2xl border px-4 py-3 text-lg leading-relaxed placeholder:text-faint ${
-            topicError ? "border-red-600" : "border-line"
+            topicError ? "border-danger-600" : "border-line"
           }`}
         />
         <div className="mt-2 flex flex-wrap items-start justify-between gap-2 text-sm">
           {topicError ? (
-            <p id="topic-error" className="text-red-700">
+            <p id="topic-error" className="text-danger-700">
               {topicError}
             </p>
           ) : (
@@ -193,7 +193,7 @@ export function CreateSpeech({
       <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
         <button
           type="submit"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 font-medium text-white transition-colors hover:bg-ink-soft sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 font-medium text-on-ink transition-colors hover:bg-ink-soft sm:w-auto"
         >
           <Sparkles aria-hidden="true" className="size-4" />
           Generate My Speech

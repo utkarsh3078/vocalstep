@@ -100,7 +100,7 @@ export function FinishedScreen({
           <button
             type="button"
             onClick={onPractiseAgain}
-            className={`inline-flex items-center justify-center rounded-full px-6 py-3 font-medium transition-colors ${dark ? "bg-white text-neutral-950 hover:bg-neutral-200" : "bg-ink text-white hover:bg-ink-soft"}`}
+            className={`inline-flex items-center justify-center rounded-full px-6 py-3 font-medium transition-colors ${dark ? "bg-white text-neutral-950 hover:bg-neutral-200" : "bg-ink text-on-ink hover:bg-ink-soft"}`}
           >
             Practise again
           </button>

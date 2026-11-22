@@ -16,7 +16,7 @@ export function RegenerateSpeech({ speechId, language }: { speechId: string; lan
   return (
     <div className="space-y-4">
       {failure && (
-        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+        <div role="alert" className="rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-danger-800">
           <p>{generationErrorMessage(failure.code, failure.reason)}</p>
           {failure.code === "unauthorized" && (
             <Link
@@ -32,7 +32,7 @@ export function RegenerateSpeech({ speechId, language }: { speechId: string; lan
         <button
           type="button"
           onClick={() => void generate({ replaces: speechId })}
-          className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-white transition-colors hover:bg-ink-soft"
+          className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-on-ink transition-colors hover:bg-ink-soft"
         >
           <RefreshCw aria-hidden="true" className="size-4" />
           Write a new version

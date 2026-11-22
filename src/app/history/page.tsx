@@ -22,15 +22,15 @@ export const metadata: Metadata = {
 const container = "mx-auto w-full max-w-6xl px-4 sm:px-6";
 const card = "rounded-card bg-surface shadow-card";
 const primaryButton =
-  "inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-white transition-colors hover:bg-ink-soft";
+  "inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-on-ink transition-colors hover:bg-ink-soft";
 const secondaryButton =
   "inline-flex items-center justify-center gap-2 rounded-full border border-line bg-surface px-5 py-3 font-medium transition-colors hover:border-faint";
 const smallPrimary =
-  "inline-flex items-center justify-center rounded-full bg-ink px-4 py-2 text-sm font-medium whitespace-nowrap text-white transition-colors hover:bg-ink-soft";
+  "inline-flex items-center justify-center rounded-full bg-ink px-4 py-2 text-sm font-medium whitespace-nowrap text-on-ink transition-colors hover:bg-ink-soft";
 const smallSecondary =
   "inline-flex items-center justify-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors hover:border-faint";
 const smallQuiet =
-  "inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-red-50 hover:text-red-700";
+  "inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-danger-50 hover:text-danger-700";
 
 export default function HistoryPage({ searchParams }: PageProps<"/history">) {
   return (
@@ -93,7 +93,7 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
     return (
       <>
         {header}
-        <p role="alert" className="mt-8 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-red-800">
+        <p role="alert" className="mt-8 rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-danger-800">
           We couldn&apos;t load your speeches just now. Please refresh the page.
         </p>
       </>
@@ -267,7 +267,7 @@ function Pill({ tone, children }: { tone: "mint" | "peach" | "neutral" | "red"; 
     mint: "border-mint-200 bg-mint-50 text-mint-700",
     peach: "border-peach-200 bg-peach-50 text-peach-700",
     neutral: "border-line bg-canvas text-ink-soft",
-    red: "border-red-200 bg-red-50 text-red-800",
+    red: "border-danger-200 bg-danger-50 text-danger-800",
   };
   return (
     <span className={`inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-sm font-medium ${tones[tone]}`}>

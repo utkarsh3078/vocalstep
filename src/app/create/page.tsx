@@ -68,7 +68,7 @@ async function Create({ searchParams }: Pick<PageProps<"/create">, "searchParams
     );
   } else if (!quota) {
     main = (
-      <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+      <p role="alert" className="rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-danger-800">
         We couldn&apos;t check your free speeches just now. Please refresh the page.
       </p>
     );
@@ -79,7 +79,7 @@ async function Create({ searchParams }: Pick<PageProps<"/create">, "searchParams
         <span className="mt-6 flex flex-wrap gap-3">
           <Link
             href="/history"
-            className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-white transition-colors hover:bg-ink-soft"
+            className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-on-ink transition-colors hover:bg-ink-soft"
           >
             Your speeches
             <ArrowRight aria-hidden="true" className="size-4" />

@@ -31,7 +31,7 @@ export async function generateMetadata({
 const container = "mx-auto w-full max-w-6xl px-4 sm:px-6";
 const card = "rounded-card bg-surface shadow-card";
 const primaryButton =
-  "inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-white transition-colors hover:bg-ink-soft";
+  "inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-on-ink transition-colors hover:bg-ink-soft";
 
 export default function SamplePage({ params }: PageProps<"/samples/[slug]">) {
   return (

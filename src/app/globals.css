@@ -1,46 +1,140 @@
 @import "tailwindcss";
 
 /*
+ * Dark mode. The theme is a data-theme attribute ("light" or "dark") on <html>,
+ * set before the first paint by the script in src/components/theme-script.tsx.
+ * Any element can carry its own data-theme to set the theme of everything
+ * inside it (the teleprompter does, so its own theme button still works).
+ * `dark:` utilities follow the nearest data-theme.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
  * Design tokens. A soft grey canvas, white cards with large rounded corners,
  * near-black ink, and two quiet accents: mint (progress, success) and peach
- * (counts, highlights). Contrast, checked against WCAG AA:
- *   ink on canvas 15:1 · muted on canvas 5.4:1, on white 6:1
- *   faint on canvas 3:1: large text only (24px and up), never body text
- *   mint-700 on mint-50 4.7:1 · peach-700 on peach-50 5:1
+ * (counts, highlights); danger is for errors. Each token has a light and a
+ * dark value below; use the token, never a raw grey.
+ *
+ * Contrast, checked against WCAG AA, in both themes:
+ *   light: ink on canvas 15:1 · muted on canvas 5.4:1, on white 6:1
+ *          faint on canvas 3:1: large text only (24px and up), never body text
+ *          mint-700 on mint-50 4.7:1 · peach-700 on peach-50 5:1
+ *   dark:  ink on canvas 16:1 · muted on canvas 7.6:1, on surface 6.8:1
+ *          faint on canvas 4.4:1 (still large text only, to match light)
+ *          mint-700 on mint-50 8:1 · peach-700 on peach-50 8:1
+ *          danger-800 on danger-50 11:1
  *   mint-400 is decorative only (lines, dots), never text.
- *   mint-700 also colours chart marks (validated: 3:1 or more on white).
+ *   mint-700 also colours chart marks (3:1 or more on the surface, both themes).
+ *   on-ink is the text on an ink-filled button (white on near-black, and the
+ *   reverse in dark).
  */
 @theme inline {
   --font-sans: var(--font-inter);
 
-  --color-canvas: #f3f3f2;
-  --color-surface: #ffffff;
-  --color-well: #ececeb;
-  --color-line: #e3e3e1;
-  --color-ink: #1c1c1c;
-  --color-ink-soft: #3d3d3d;
-  --color-muted: #636363;
-  --color-faint: #8c8c8c;
+  --color-canvas: var(--vs-canvas);
+  --color-surface: var(--vs-surface);
+  --color-well: var(--vs-well);
+  --color-line: var(--vs-line);
+  --color-ink: var(--vs-ink);
+  --color-ink-soft: var(--vs-ink-soft);
+  --color-on-ink: var(--vs-on-ink);
+  --color-muted: var(--vs-muted);
+  --color-faint: var(--vs-faint);
 
-  --color-mint-50: #e4f4ea;
-  --color-mint-200: #bfe5cf;
-  --color-mint-400: #6cc59a;
-  --color-mint-700: #1f7a4a;
-  --color-peach-50: #fbe3d4;
-  --color-peach-200: #f5c2a3;
-  --color-peach-700: #9c4a1a;
+  --color-mint-50: var(--vs-mint-50);
+  --color-mint-200: var(--vs-mint-200);
+  --color-mint-400: var(--vs-mint-400);
+  --color-mint-700: var(--vs-mint-700);
+  --color-peach-50: var(--vs-peach-50);
+  --color-peach-200: var(--vs-peach-200);
+  --color-peach-700: var(--vs-peach-700);
+
+  --color-danger-50: var(--vs-danger-50);
+  --color-danger-200: var(--vs-danger-200);
+  --color-danger-600: var(--vs-danger-600);
+  --color-danger-700: var(--vs-danger-700);
+  --color-danger-800: var(--vs-danger-800);
 
   --radius-card: 1.75rem;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.12);
-  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.04), 0 24px 48px -20px rgb(0 0 0 / 0.18);
+  --shadow-card: var(--vs-shadow-card);
+  --shadow-lift: var(--vs-shadow-lift);
 }
 
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --vs-canvas: #f3f3f2;
+  --vs-surface: #ffffff;
+  --vs-well: #ececeb;
+  --vs-line: #e3e3e1;
+  --vs-ink: #1c1c1c;
+  --vs-ink-soft: #3d3d3d;
+  --vs-on-ink: #ffffff;
+  --vs-muted: #636363;
+  --vs-faint: #8c8c8c;
+
+  --vs-mint-50: #e4f4ea;
+  --vs-mint-200: #bfe5cf;
+  --vs-mint-400: #6cc59a;
+  --vs-mint-700: #1f7a4a;
+  --vs-peach-50: #fbe3d4;
+  --vs-peach-200: #f5c2a3;
+  --vs-peach-700: #9c4a1a;
+
+  --vs-danger-50: #fef2f2;
+  --vs-danger-200: #fecaca;
+  --vs-danger-600: #dc2626;
+  --vs-danger-700: #b91c1c;
+  --vs-danger-800: #991b1b;
+
+  --vs-shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.12);
+  --vs-shadow-lift: 0 2px 4px rgb(0 0 0 / 0.04), 0 24px 48px -20px rgb(0 0 0 / 0.18);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --vs-canvas: #131313;
+  --vs-surface: #1e1e1e;
+  --vs-well: #2a2a2a;
+  --vs-line: #333333;
+  --vs-ink: #f1f1f0;
+  --vs-ink-soft: #d4d4d3;
+  --vs-on-ink: #131313;
+  --vs-muted: #a6a6a6;
+  --vs-faint: #7c7c7c;
+
+  --vs-mint-50: #16301f;
+  --vs-mint-200: #295c3e;
+  --vs-mint-400: #4fae80;
+  --vs-mint-700: #7fd4a6;
+  --vs-peach-50: #3a2415;
+  --vs-peach-200: #6b4024;
+  --vs-peach-700: #f3b48c;
+
+  --vs-danger-50: #3a1717;
+  --vs-danger-200: #6e2b2b;
+  --vs-danger-600: #f87171;
+  --vs-danger-700: #fca5a5;
+  --vs-danger-800: #fecaca;
+
+  /* Shadows barely show on dark, so cards also get a faint light edge. */
+  --vs-shadow-card: 0 0 0 1px rgb(255 255 255 / 0.05), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+  --vs-shadow-lift: 0 0 0 1px rgb(255 255 255 / 0.07), 0 24px 48px -20px rgb(0 0 0 / 0.7);
+}
+
+/*
+ * Plain CSS reads the --vs-* values, not --color-*: the --color-* names are
+ * fixed at the page root, so they would ignore a data-theme set further down
+ * (the teleprompter's own theme).
+ */
 @layer base {
-  /* Fields stay white on the grey canvas. */
+  /* Fields stay white (dark grey in dark mode) on the canvas. */
   input:not([type="radio"], [type="checkbox"]),
   textarea,
   select {
-    background-color: var(--color-surface);
+    background-color: var(--vs-surface);
   }
 }
 
@@ -51,7 +145,7 @@
  */
 @layer base {
   :focus-visible {
-    outline: 2px solid var(--color-ink);
+    outline: 2px solid var(--vs-ink);
     outline-offset: 2px;
   }
 }

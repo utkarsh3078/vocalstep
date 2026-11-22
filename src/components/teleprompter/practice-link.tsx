@@ -28,7 +28,7 @@ export function PracticeLink({
   href,
   session,
   startLabel = "Start Teleprompter",
-  className = "inline-block rounded-md bg-neutral-900 px-5 py-3 font-medium text-white hover:bg-neutral-700",
+  className = "inline-block rounded-full bg-ink px-5 py-3 font-medium text-on-ink transition-colors hover:bg-ink-soft",
 }: {
   speechId: string;
   wordCount: number;

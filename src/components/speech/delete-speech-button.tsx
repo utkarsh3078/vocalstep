@@ -54,13 +54,13 @@ export function DeleteSpeechButton({
     <div
       role="group"
       aria-labelledby={`delete-${id}`}
-      className="w-full rounded-2xl border border-red-200 bg-red-50 px-4 py-3"
+      className="w-full rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3"
     >
-      <p id={`delete-${id}`} className="text-red-900">
+      <p id={`delete-${id}`} className="text-danger-800">
         Delete “{title}”? You can&apos;t undo this. Your practice minutes and streak are kept.
       </p>
       {error && (
-        <p role="alert" className="mt-2 text-red-800">
+        <p role="alert" className="mt-2 text-danger-800">
           {error}
         </p>
       )}

@@ -34,11 +34,11 @@ export function Field({
         name={name}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy || undefined}
-        className={`mt-2 block w-full rounded-xl border px-4 py-3 placeholder:text-faint ${error ? "border-red-600" : "border-line"}`}
+        className={`mt-2 block w-full rounded-xl border px-4 py-3 placeholder:text-faint ${error ? "border-danger-600" : "border-line"}`}
         {...input}
       />
       {error && (
-        <p id={`${id}-error`} className="mt-1.5 text-sm text-red-700">
+        <p id={`${id}-error`} className="mt-1.5 text-sm text-danger-700">
           {error}
         </p>
       )}
@@ -53,7 +53,7 @@ export function SubmitButton({ label, pendingLabel }: { label: string; pendingLa
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-full bg-ink px-5 py-3.5 font-medium text-white transition-colors hover:bg-ink-soft disabled:opacity-60"
+      className="w-full rounded-full bg-ink px-5 py-3.5 font-medium text-on-ink transition-colors hover:bg-ink-soft disabled:opacity-60"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -64,7 +64,7 @@ export function SubmitButton({ label, pendingLabel }: { label: string; pendingLa
 export function FormMessage({ error, message }: { error?: string; message?: string }) {
   if (error) {
     return (
-      <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+      <p role="alert" className="rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-danger-800">
         {error}
       </p>
     );

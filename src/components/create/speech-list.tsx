@@ -18,7 +18,7 @@ export function SpeechList({
 }) {
   if (speeches === null) {
     return (
-      <p role="alert" className="text-sm text-red-800">
+      <p role="alert" className="text-sm text-danger-800">
         We couldn&apos;t load your speeches. Please refresh the page.
       </p>
     );

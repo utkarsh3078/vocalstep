@@ -9,7 +9,7 @@ export default function NotFound() {
   return (
     <section>
       <h1 className="text-3xl font-bold tracking-tight">Page not found</h1>
-      <p className="mt-4 text-neutral-700">
+      <p className="mt-4 text-muted">
         This page doesn&apos;t exist. It may have been moved or the link may be wrong.
       </p>
       <p className="mt-6">

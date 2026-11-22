@@ -15,7 +15,8 @@ export const teleprompter = {
 
   themes: ["dark", "light"],
   /**
-   * Light, to match the site, which is light only for now. A visitor's own
+   * Used where the site's theme is unknown (tests). In the browser, the
+   * teleprompter opens in the site's light or dark theme; a visitor's own
    * choice from the theme button is kept (see storage.ts).
    */
   defaultTheme: "light",

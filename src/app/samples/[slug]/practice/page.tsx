@@ -29,7 +29,7 @@ export default function SamplePracticePage({ params }: PageProps<"/samples/[slug
     // The slug is URL data, so it is read inside Suspense.
     <Suspense
       fallback={
-        <p role="status" className="text-neutral-600">
+        <p role="status" className="text-muted">
           Loading the teleprompter…
         </p>
       }

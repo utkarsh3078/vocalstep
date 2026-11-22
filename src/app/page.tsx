@@ -112,7 +112,7 @@ const DEMO_WORDS = 150;
 const container = "mx-auto w-full max-w-6xl px-4 sm:px-6";
 const card = "rounded-card bg-surface shadow-card";
 const primaryButton =
-  "inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 font-medium text-white transition-colors hover:bg-ink-soft";
+  "inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 font-medium text-on-ink transition-colors hover:bg-ink-soft";
 const secondaryButton =
   "inline-flex items-center justify-center gap-2 rounded-full border border-line bg-surface px-6 py-3.5 font-medium text-ink transition-colors hover:border-faint";
 
@@ -376,7 +376,7 @@ function SampleCard({ sample }: { sample: Sample }) {
         </p>
         <span
           aria-hidden="true"
-          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-transform group-hover:translate-x-0.5"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-ink text-on-ink transition-transform group-hover:translate-x-0.5"
         >
           <ArrowRight className="size-4" />
         </span>

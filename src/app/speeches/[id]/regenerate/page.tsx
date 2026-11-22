@@ -54,7 +54,7 @@ async function Regenerate({ params }: { params: Promise<{ id: string }> }) {
     <p
       role={role}
       className={`rounded-2xl border px-4 py-3 ${
-        tone === "red" ? "border-red-200 bg-red-50 text-red-800" : "border-peach-200 bg-peach-50 text-peach-700"
+        tone === "red" ? "border-danger-200 bg-danger-50 text-danger-800" : "border-peach-200 bg-peach-50 text-peach-700"
       }`}
     >
       {text}

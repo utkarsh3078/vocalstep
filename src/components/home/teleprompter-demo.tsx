@@ -13,9 +13,6 @@ import { progressAt, stepSpeed } from "@/lib/teleprompter/timing";
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 
 const { highlight } = teleprompter;
-/** The real teleprompter's light-theme text colour (its --tp-text), as RGB. */
-const TEXT_RGB = "23 23 23";
-
 /**
  * The real teleprompter's highlight, for a demo that moves word by word: the
  * word being read turns fully dark and bold, the words around it fade in and
@@ -141,9 +138,8 @@ export function TeleprompterDemo({
       <div ref={viewportRef} aria-hidden="true" className="relative mt-6 h-52 overflow-hidden sm:h-56">
         <div
           ref={textRef}
-          className="relative transition-transform duration-500 ease-out motion-reduce:transition-none"
-          // Light text, darkened around the current word by wordStyle(), as in the real teleprompter.
-          style={{ color: `rgb(${TEXT_RGB})` }}
+          // Ink text, faded away from the current word by wordStyle(), as in the real teleprompter.
+          className="relative text-ink transition-transform duration-500 ease-out motion-reduce:transition-none"
         >
           {blocks.map((block, blockIndex) =>
             block.type === "heading" ? (
@@ -193,7 +189,7 @@ export function TeleprompterDemo({
           type="button"
           onClick={() => setChoice(!playing)}
           aria-label={playing ? "Pause the demo" : "Play the demo"}
-          className="flex size-14 items-center justify-center rounded-full bg-ink text-white transition-colors hover:bg-ink-soft"
+          className="flex size-14 items-center justify-center rounded-full bg-ink text-on-ink transition-colors hover:bg-ink-soft"
         >
           {playing ? (
             <Pause aria-hidden="true" className="size-5" fill="currentColor" />

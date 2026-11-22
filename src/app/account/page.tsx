@@ -59,7 +59,7 @@ async function Account({ searchParams }: Pick<PageProps<"/account">, "searchPara
         </p>
       )}
       {error && (
-        <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+        <p role="alert" className="rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-danger-800">
           We couldn&apos;t load your profile just now. Please refresh the page.
         </p>
       )}
@@ -111,7 +111,7 @@ async function Account({ searchParams }: Pick<PageProps<"/account">, "searchPara
       <form action={signOut}>
         <button
           type="submit"
-          className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 font-medium text-muted transition-colors hover:bg-red-50 hover:text-red-700"
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 font-medium text-muted transition-colors hover:bg-danger-50 hover:text-danger-700"
         >
           <LogOut aria-hidden="true" className="size-4" />
           Sign out

@@ -24,7 +24,7 @@ export default function ContactPage() {
           </div>
           <a
             href={`mailto:${site.contactEmail}`}
-            className="inline-flex items-center rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white! transition-colors hover:bg-ink-soft"
+            className="inline-flex items-center rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-on-ink! transition-colors hover:bg-ink-soft"
           >
             Send an email
           </a>

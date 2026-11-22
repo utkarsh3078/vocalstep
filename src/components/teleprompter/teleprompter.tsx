@@ -120,7 +120,7 @@ export function Teleprompter(props: TeleprompterProps) {
 
   if (!isBrowser) {
     return (
-      <p role="status" className="text-neutral-600">
+      <p role="status" className="text-muted">
         Loading the teleprompter…
       </p>
     );
@@ -710,6 +710,8 @@ function TeleprompterScreen({
   return (
     <div
       ref={rootRef}
+      // Its own theme, so the theme button works whatever the site's theme is.
+      data-theme={settings.theme}
       className={`fixed inset-0 z-50 flex flex-col ${dark ? "bg-neutral-950 text-neutral-100" : "bg-white text-neutral-900"}`}
       style={
         {
@@ -792,7 +794,7 @@ function TeleprompterScreen({
           <p
             className={`pointer-events-none absolute inset-x-0 bottom-2 px-3 text-center text-sm ${mutedText}`}
           >
-            Press Start or the Space bar when you are ready, and read the dark word as it moves along.
+            Press Start or the Space bar when you are ready, and read the bold word as it moves along.
           </p>
         )}
 

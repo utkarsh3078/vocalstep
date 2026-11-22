@@ -24,11 +24,11 @@ export const metadata: Metadata = {
 const container = "mx-auto w-full max-w-6xl px-4 sm:px-6";
 const card = "rounded-card bg-surface shadow-card";
 const primaryButton =
-  "inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-white transition-colors hover:bg-ink-soft";
+  "inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 font-medium text-on-ink transition-colors hover:bg-ink-soft";
 const secondaryButton =
   "inline-flex items-center justify-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2.5 text-sm font-medium transition-colors hover:border-faint";
 const quietButton =
-  "inline-flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-red-50 hover:text-red-700";
+  "inline-flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-danger-50 hover:text-danger-700";
 
 /** Shown after coming back from Edit or Regenerate. */
 const NOTICES: Record<string, string> = {
@@ -191,7 +191,7 @@ function NotReady({ speech, heading }: { speech: SpeechData; heading: string }) 
             Being written
           </span>
         ) : (
-          <span className="rounded-lg border border-red-200 bg-red-50 px-2 py-0.5 text-sm font-medium text-red-800">
+          <span className="rounded-lg border border-danger-200 bg-danger-50 px-2 py-0.5 text-sm font-medium text-danger-800">
             Couldn&apos;t be written
           </span>
         )}
@@ -211,7 +211,7 @@ function NotReady({ speech, heading }: { speech: SpeechData; heading: string }) 
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <Link
               href={`/create?topic=${encodeURIComponent(speech.topic)}`}
-              className="inline-flex items-center justify-center rounded-full bg-ink px-5 py-3 font-medium text-white transition-colors hover:bg-ink-soft"
+              className="inline-flex items-center justify-center rounded-full bg-ink px-5 py-3 font-medium text-on-ink transition-colors hover:bg-ink-soft"
             >
               Try again with this topic
             </Link>
@@ -219,7 +219,7 @@ function NotReady({ speech, heading }: { speech: SpeechData; heading: string }) 
               id={speech.id}
               title={heading}
               afterDeleteHref="/history?deleted=1"
-              className="inline-flex items-center justify-center rounded-full px-4 py-3 font-medium text-muted transition-colors hover:bg-red-50 hover:text-red-700"
+              className="inline-flex items-center justify-center rounded-full px-4 py-3 font-medium text-muted transition-colors hover:bg-danger-50 hover:text-danger-700"
             />
           </div>
         </>
