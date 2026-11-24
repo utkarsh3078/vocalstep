@@ -20,6 +20,7 @@ import type { PracticeStats } from "@/lib/practice/streaks";
 import type { PracticeTarget } from "@/lib/practice/target";
 import { PracticeTracker, type PracticeSnapshot } from "@/lib/practice/tracker";
 import type { SpeechBlock } from "@/lib/speech/blocks";
+import { saveTeleprompterSettings } from "@/app/actions/preferences";
 import { emphasis, highlightRange, wordOpacity } from "@/lib/teleprompter/highlight";
 import {
   groupLines,
@@ -32,6 +33,7 @@ import {
   type TextLine,
   type TextRun,
 } from "@/lib/teleprompter/position";
+import { SettingsSync } from "@/lib/teleprompter/settings-sync";
 import {
   clearProgress,
   loadProgress,
@@ -70,6 +72,12 @@ export interface TeleprompterProps {
    * and progress are then saved to their account. Guests leave this out.
    */
   tracking?: { target: PracticeTarget; session: OpenSession | null | undefined };
+  /**
+   * For signed-in users: the display settings saved to their profile
+   * (undefined if they could not be read). Saved ones replace this browser's,
+   * and every change is saved back. Guests leave this out.
+   */
+  profile?: { settings: Record<string, unknown> | undefined };
 }
 
 /** The totals on the end-of-session screen. */
@@ -140,11 +148,15 @@ function TeleprompterScreen({
   language,
   exitHref,
   tracking,
+  profile,
 }: TeleprompterProps) {
   const router = useRouter();
 
   const [settings, setSettings] = useState(() =>
-    loadSettings(practice.languages[language].wpm),
+    loadSettings(practice.languages[language].wpm, profile?.settings),
+  );
+  const [settingsSync] = useState(() =>
+    profile ? new SettingsSync(settings, saveTeleprompterSettings) : null,
   );
   const [initial] = useState(() => {
     const resume = chooseResume(
@@ -208,6 +220,7 @@ function TeleprompterScreen({
     settingsRef.current = next;
     setSettings(next);
     saveSettings(next);
+    settingsSync?.change(next);
   }
 
   function publishDisplay() {
@@ -576,6 +589,7 @@ function TeleprompterScreen({
   const onPageHidden = useEffectEvent(() => {
     pause();
     saveNow();
+    settingsSync?.flush();
     if (statusRef.current !== "finished") tracker?.save(snapshot(), { urgent: true });
   });
   const onPageClose = useEffectEvent(() => {
@@ -607,6 +621,7 @@ function TeleprompterScreen({
   // Next.js keeps a page mounted but hidden after navigating away from it.
   // When that happens, pause and save; a finished session starts fresh next time.
   const onHide = useEffectEvent(() => {
+    settingsSync?.flush();
     if (statusRef.current === "finished") {
       restart();
     } else {

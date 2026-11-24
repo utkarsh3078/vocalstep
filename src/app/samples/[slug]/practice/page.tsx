@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { Teleprompter } from "@/components/teleprompter/teleprompter";
+import { Teleprompter, type TeleprompterProps } from "@/components/teleprompter/teleprompter";
 import { samples } from "@/content/samples";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getOpenSession } from "@/lib/practice/data";
 import { getSample } from "@/lib/samples";
 import { createClient } from "@/lib/supabase/server";
+import { getSavedSettings } from "@/lib/teleprompter/profile";
 
 export function generateStaticParams() {
   return samples.map(({ slug }) => ({ slug }));
@@ -47,9 +48,17 @@ async function SamplePractice({ params }: { params: Promise<{ slug: string }> })
   // Signed-in users' practice on samples counts toward their minutes and streak.
   const user = await getCurrentUser();
   const target = { sampleSlug: sample.slug };
-  const tracking = user
-    ? { target, session: await getOpenSession(await createClient(), target) }
-    : undefined;
+  let tracking: TeleprompterProps["tracking"];
+  let profile: TeleprompterProps["profile"];
+  if (user) {
+    const supabase = await createClient();
+    const [session, settings] = await Promise.all([
+      getOpenSession(supabase, target),
+      getSavedSettings(supabase, user.id),
+    ]);
+    tracking = { target, session };
+    profile = { settings };
+  }
 
   return (
     <Teleprompter
@@ -60,6 +69,7 @@ async function SamplePractice({ params }: { params: Promise<{ slug: string }> })
       language={sample.language}
       exitHref={`/samples/${sample.slug}`}
       tracking={tracking}
+      profile={profile}
     />
   );
 }

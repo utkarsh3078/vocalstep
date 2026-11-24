@@ -61,7 +61,16 @@ export function defaultSettings(defaultWpm: number): TeleprompterSettings {
 
 /** Reads stored settings, using the default for any missing or invalid field. */
 export function parseSettings(raw: unknown, defaultWpm: number): TeleprompterSettings {
-  const settings = defaultSettings(defaultWpm);
+  return overlaySettings(defaultSettings(defaultWpm), raw);
+}
+
+/**
+ * Takes each valid field of `raw` over `base`, keeping `base` for any field
+ * that is missing or invalid. Used for browser storage (over the defaults)
+ * and for the settings saved to a signed-in user's profile (over the browser's).
+ */
+export function overlaySettings(base: TeleprompterSettings, raw: unknown): TeleprompterSettings {
+  const settings = { ...base };
   if (!isRecord(raw)) return settings;
 
   const { fontSize, lineHeight, theme, themeChosen, wpm } = raw;
@@ -137,8 +146,14 @@ export function progressKey(speechId: string): string {
   return PROGRESS_PREFIX + speechId;
 }
 
-export function loadSettings(defaultWpm: number): TeleprompterSettings {
-  const settings = parseSettings(readJson(SETTINGS_KEY), defaultWpm);
+/**
+ * The settings to open with: this browser's, with any settings saved to the
+ * signed-in user's profile taking their place, so the teleprompter looks the
+ * same on every device.
+ */
+export function loadSettings(defaultWpm: number, profile?: unknown): TeleprompterSettings {
+  let settings = parseSettings(readJson(SETTINGS_KEY), defaultWpm);
+  if (profile !== undefined) settings = overlaySettings(settings, profile);
   // Until the visitor picks one with the theme button, match the site.
   if (!settings.themeChosen) settings.theme = currentTheme();
   return settings;

@@ -8,6 +8,7 @@ import { getOpenSession } from "@/lib/practice/data";
 import { parseSpeech } from "@/lib/speech/blocks";
 import { getSpeech } from "@/lib/speech/data";
 import { createClient } from "@/lib/supabase/server";
+import { getSavedSettings } from "@/lib/teleprompter/profile";
 
 export const metadata: Metadata = {
   title: "Practise your speech",
@@ -24,7 +25,7 @@ export default function SpeechPracticePage({ params }: PageProps<"/speeches/[id]
 
 async function Practice({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  await requireUser(`/speeches/${id}/practice`);
+  const user = await requireUser(`/speeches/${id}/practice`);
 
   const supabase = await createClient();
   const speech = await getSpeech(supabase, id);
@@ -33,7 +34,10 @@ async function Practice({ params }: { params: Promise<{ id: string }> }) {
 
   const { blocks, wordCount } = parseSpeech(speech.content);
   const target = { speechId: speech.id };
-  const session = await getOpenSession(supabase, target, speech.version);
+  const [session, settings] = await Promise.all([
+    getOpenSession(supabase, target, speech.version),
+    getSavedSettings(supabase, user.id),
+  ]);
 
   return (
     <Teleprompter
@@ -46,6 +50,7 @@ async function Practice({ params }: { params: Promise<{ id: string }> }) {
       language={speech.language}
       exitHref={`/speeches/${speech.id}`}
       tracking={{ target, session }}
+      profile={{ settings }}
     />
   );
 }

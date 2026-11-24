@@ -49,6 +49,11 @@ export const teleprompter = {
     boldStrokeEm: 0.035,
   },
 
+  /**
+   * A signed-in user's settings are saved to their profile once they have
+   * stayed the same for this long, so a burst of clicks is one save.
+   */
+  profileSaveDelayMs: 1000,
   /** How often progress is written to the browser while it changes. */
   saveIntervalMs: 1000,
   /** How often the time and progress display refreshes while playing. */
