@@ -2,9 +2,9 @@
 
 /*
  * Dark mode. The theme is a data-theme attribute ("light" or "dark") on <html>,
- * set before the first paint by the script in src/components/theme-script.tsx.
+ * set before the first paint by the script in src/lib/theme.ts.
  * Any element can carry its own data-theme to set the theme of everything
- * inside it (the teleprompter does, so its own theme button still works).
+ * inside it (the teleprompter repeats the site's, on its full-screen layer).
  * `dark:` utilities follow the nearest data-theme.
  */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
@@ -127,7 +127,7 @@
 /*
  * Plain CSS reads the --vs-* values, not --color-*: the --color-* names are
  * fixed at the page root, so they would ignore a data-theme set further down
- * (the teleprompter's own theme).
+ * (such as the teleprompter's).
  */
 @layer base {
   /* Fields stay white (dark grey in dark mode) on the canvas. */

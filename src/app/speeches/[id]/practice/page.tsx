@@ -8,7 +8,7 @@ import { getOpenSession } from "@/lib/practice/data";
 import { parseSpeech } from "@/lib/speech/blocks";
 import { getSpeech } from "@/lib/speech/data";
 import { createClient } from "@/lib/supabase/server";
-import { getSavedSettings } from "@/lib/teleprompter/profile";
+import { getSavedSettings } from "@/lib/profile";
 
 export const metadata: Metadata = {
   title: "Practise your speech",

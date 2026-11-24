@@ -1,5 +1,4 @@
-import { teleprompter, type TeleprompterTheme } from "@/config/teleprompter";
-import { currentTheme } from "@/lib/theme";
+import { teleprompter } from "@/config/teleprompter";
 
 import { clampSpeed } from "./timing";
 
@@ -14,14 +13,12 @@ import { clampSpeed } from "./timing";
 const SETTINGS_KEY = "vocalstep:teleprompter:settings";
 const PROGRESS_PREFIX = "vocalstep:teleprompter:progress:";
 
+/**
+ * The teleprompter's display settings. There is no theme here: the
+ * teleprompter always uses the site's light or dark theme (src/lib/theme.ts).
+ * A theme stored by older versions is ignored.
+ */
 export interface TeleprompterSettings {
-  theme: TeleprompterTheme;
-  /**
-   * True once the visitor has picked a theme with the theme button. Every
-   * setting is saved together, so without this a theme saved only because it
-   * was the old default would look like a choice.
-   */
-  themeChosen?: boolean;
   /** Text size in CSS pixels. */
   fontSize: number;
   /** Line spacing as a multiple of the text size. */
@@ -52,7 +49,6 @@ function isFiniteNumber(value: unknown): value is number {
 
 export function defaultSettings(defaultWpm: number): TeleprompterSettings {
   return {
-    theme: teleprompter.defaultTheme,
     fontSize: teleprompter.fontSize.default,
     lineHeight: teleprompter.defaultLineHeight,
     wpm: clampSpeed(defaultWpm),
@@ -73,16 +69,10 @@ export function overlaySettings(base: TeleprompterSettings, raw: unknown): Telep
   const settings = { ...base };
   if (!isRecord(raw)) return settings;
 
-  const { fontSize, lineHeight, theme, themeChosen, wpm } = raw;
+  const { fontSize, lineHeight, wpm } = raw;
   const { min, max } = teleprompter.fontSize;
-  const themes: readonly string[] = teleprompter.themes;
   const lineHeights: readonly number[] = teleprompter.lineHeights;
 
-  // Only a theme the visitor picked; otherwise the current default applies.
-  if (themeChosen === true && typeof theme === "string" && themes.includes(theme)) {
-    settings.theme = theme as TeleprompterTheme;
-    settings.themeChosen = true;
-  }
   if (isFiniteNumber(fontSize) && fontSize >= min && fontSize <= max) {
     settings.fontSize = Math.round(fontSize);
   }
@@ -152,11 +142,8 @@ export function progressKey(speechId: string): string {
  * same on every device.
  */
 export function loadSettings(defaultWpm: number, profile?: unknown): TeleprompterSettings {
-  let settings = parseSettings(readJson(SETTINGS_KEY), defaultWpm);
-  if (profile !== undefined) settings = overlaySettings(settings, profile);
-  // Until the visitor picks one with the theme button, match the site.
-  if (!settings.themeChosen) settings.theme = currentTheme();
-  return settings;
+  const settings = parseSettings(readJson(SETTINGS_KEY), defaultWpm);
+  return profile === undefined ? settings : overlaySettings(settings, profile);
 }
 
 export function saveSettings(settings: TeleprompterSettings): void {

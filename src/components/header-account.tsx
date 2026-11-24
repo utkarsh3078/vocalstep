@@ -1,12 +1,19 @@
 import Link from "next/link";
 
+import { AccountTheme } from "@/components/account-theme";
 import { NavLink } from "@/components/nav-link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/env/public";
+import { getSavedTheme } from "@/lib/profile";
+import { createClient } from "@/lib/supabase/server";
 
 const pill = "rounded-full px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink";
 
-/** The header's account links: the signed-in pages; Sign in and Get started otherwise. */
+/**
+ * The header's account links: the signed-in pages; Sign in and Get started
+ * otherwise. For a signed-in user it also keeps the site's theme in step with
+ * the one saved to their account.
+ */
 export async function HeaderAccount() {
   if (!isSupabaseConfigured()) return null;
 
@@ -27,8 +34,12 @@ export async function HeaderAccount() {
     );
   }
 
+  const savedTheme = await getSavedTheme(await createClient(), user.id);
+
   return (
     <nav aria-label="Your account" className="flex flex-wrap items-center gap-1 text-sm">
+      {/* Applies the theme saved to the account, and saves new choices. */}
+      <AccountTheme saved={savedTheme} />
       <NavLink href="/dashboard">Dashboard</NavLink>
       {/* A speech's own pages belong with the list of speeches. */}
       <NavLink href="/history" match={["/history", "/speeches"]}>

@@ -3,20 +3,12 @@
 import { Moon, Sun } from "lucide-react";
 import { useLayoutEffect, useSyncExternalStore } from "react";
 
-import {
-  applyTheme,
-  chooseTheme,
-  currentTheme,
-  storedTheme,
-  systemTheme,
-  watchCurrentTheme,
-  watchSystemTheme,
-} from "@/lib/theme";
+import { applyTheme, chooseTheme, currentTheme, DEFAULT_THEME, storedTheme, watchCurrentTheme } from "@/lib/theme";
 
 /**
- * The header's light / dark switch. Until the visitor uses it, the site
- * follows their device's setting, including when that changes; after, their
- * choice is kept in this browser.
+ * The header's light / dark switch. The site is light until the visitor picks
+ * dark; the choice is kept in this browser, and saved to the profile of a
+ * signed-in user (AccountTheme).
  */
 export function ThemeToggle() {
   // Null on the server and during hydration, as the theme is only known in the browser.
@@ -26,12 +18,7 @@ export function ThemeToggle() {
     // The inline script in <head> sets the theme before the first paint. In
     // development, React's Strict Mode resets <html> on its second mount, so
     // apply it again (a no-op in production).
-    applyTheme(storedTheme() ?? systemTheme());
-
-    // Follow the device until the visitor makes a choice.
-    return watchSystemTheme(() => {
-      if (storedTheme() === null) applyTheme(systemTheme());
-    });
+    applyTheme(storedTheme() ?? DEFAULT_THEME);
   }, []);
 
   const label =

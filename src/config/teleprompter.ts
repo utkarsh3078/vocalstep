@@ -13,14 +13,6 @@ export const teleprompter = {
   lineHeights: [1.3, 1.5, 1.7, 2],
   defaultLineHeight: 1.5,
 
-  themes: ["dark", "light"],
-  /**
-   * Used where the site's theme is unknown (tests). In the browser, the
-   * teleprompter opens in the site's light or dark theme; a visitor's own
-   * choice from the theme button is kept (see storage.ts).
-   */
-  defaultTheme: "light",
-
   /**
    * Between paragraphs and past headings there is nothing to read, so the text
    * moves on at this many line heights per second instead of the reading speed.
@@ -63,5 +55,3 @@ export const teleprompter = {
   /** Longest frame step counted, so a stalled tab cannot jump the text or the timer. */
   maxFrameSeconds: 0.25,
 } as const;
-
-export type TeleprompterTheme = (typeof teleprompter.themes)[number];

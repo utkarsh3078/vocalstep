@@ -1,8 +1,10 @@
 import "server-only";
 
 import type { createClient } from "@/lib/supabase/server";
+import { settingsFromProfile } from "@/lib/teleprompter/preferences";
+import { parseTheme, type SiteTheme } from "@/lib/theme";
 
-import { settingsFromProfile } from "./preferences";
+/** Display preferences saved to the signed-in user's profile (RLS applies). */
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
@@ -16,7 +18,7 @@ export async function getSavedSettings(
 ): Promise<Record<string, unknown> | undefined> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("pref_wpm, pref_font_size, pref_line_height, pref_theme")
+    .select("pref_wpm, pref_font_size, pref_line_height")
     .eq("id", userId)
     .maybeSingle();
   if (error) {
@@ -24,4 +26,14 @@ export async function getSavedSettings(
     return undefined;
   }
   return data ? settingsFromProfile(data) : undefined;
+}
+
+/** The theme the user picked and saved to their profile, or null if none (or unreadable). */
+export async function getSavedTheme(supabase: Supabase, userId: string): Promise<SiteTheme | null> {
+  const { data, error } = await supabase.from("profiles").select("pref_theme").eq("id", userId).maybeSingle();
+  if (error) {
+    console.error("Could not load the theme:", error.code, error.message);
+    return null;
+  }
+  return parseTheme(data?.pref_theme);
 }

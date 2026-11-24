@@ -32,6 +32,9 @@ interface ControlsProps {
   onToggleDisplay: () => void;
   onFontSize: (direction: 1 | -1) => void;
   onLineHeight: (direction: 1 | -1) => void;
+  /** The site's theme is dark (the teleprompter always uses the site's theme). */
+  dark: boolean;
+  /** Switches the site's theme, and with it the teleprompter's. */
   onToggleTheme: () => void;
   onToggleFullscreen: () => void;
   onFinish: () => void;
@@ -48,8 +51,7 @@ interface ControlsProps {
  * phones to save room), so screen readers and shortcuts' hints stay the same.
  */
 export function TeleprompterControls(props: ControlsProps) {
-  const { status, settings, canFinish, showDisplay } = props;
-  const dark = settings.theme === "dark";
+  const { status, settings, canFinish, showDisplay, dark } = props;
   const { fontSize, lineHeights, speed } = teleprompter;
 
   const tone = {

@@ -66,15 +66,6 @@ describe("SettingsSync", () => {
     expect(calls).toEqual([{ wpm: 130, fontSize: 40, lineHeight: 1.5 }]);
   });
 
-  it("includes the theme only once chosen", () => {
-    const { calls, save } = controlledSave();
-    const sync = new SettingsSync(start, save, DELAY);
-
-    sync.change({ ...start, theme: "dark", themeChosen: true });
-    sync.flush();
-    expect(calls[0]).toEqual({ wpm: 130, fontSize: 32, lineHeight: 1.5, theme: "dark" });
-  });
-
   it("runs one save at a time and sends a change made meanwhile afterwards", async () => {
     const { calls, save, reply } = controlledSave();
     const sync = new SettingsSync(start, save, DELAY);

@@ -11,17 +11,19 @@ import {
 } from "./preferences";
 import { defaultSettings, overlaySettings } from "./storage";
 
-const empty = { pref_wpm: null, pref_font_size: null, pref_line_height: null, pref_theme: null };
+const empty = { pref_wpm: null, pref_font_size: null, pref_line_height: null };
 
 describe("settingsFromProfile", () => {
   it("leaves out columns never saved", () => {
     expect(settingsFromProfile(empty)).toEqual({});
   });
 
-  it("reads saved columns, and a saved theme as a choice", () => {
-    expect(
-      settingsFromProfile({ pref_wpm: 150, pref_font_size: 40, pref_line_height: 1.7, pref_theme: "dark" }),
-    ).toEqual({ wpm: 150, fontSize: 40, lineHeight: 1.7, theme: "dark", themeChosen: true });
+  it("reads saved columns", () => {
+    expect(settingsFromProfile({ pref_wpm: 150, pref_font_size: 40, pref_line_height: 1.7 })).toEqual({
+      wpm: 150,
+      fontSize: 40,
+      lineHeight: 1.7,
+    });
   });
 
   it("reads a line height sent as a string", () => {
@@ -34,13 +36,8 @@ describe("overlaySettings with profile settings", () => {
   const browser = { ...defaultSettings(130), fontSize: 48, wpm: 170 };
 
   it("lets the profile's saved settings replace the browser's", () => {
-    const saved = settingsFromProfile({ ...empty, pref_wpm: 150, pref_theme: "dark" });
-    expect(overlaySettings(browser, saved)).toEqual({
-      ...browser,
-      wpm: 150,
-      theme: "dark",
-      themeChosen: true,
-    });
+    const saved = settingsFromProfile({ ...empty, pref_wpm: 150 });
+    expect(overlaySettings(browser, saved)).toEqual({ ...browser, wpm: 150 });
   });
 
   it("keeps the browser's settings where the profile has none", () => {
@@ -53,34 +50,22 @@ describe("overlaySettings with profile settings", () => {
     expect(overlaySettings(browser, saved)).toEqual(browser);
   });
 
-  it("keeps a chosen browser theme when the profile has none", () => {
-    const chosen = { ...browser, theme: "dark" as const, themeChosen: true };
-    expect(overlaySettings(chosen, settingsFromProfile({ ...empty, pref_wpm: 150 }))).toEqual({
-      ...chosen,
-      wpm: 150,
-    });
+  it("ignores a theme: the teleprompter uses the site's", () => {
+    expect(overlaySettings(browser, { theme: "dark", themeChosen: true })).toEqual(browser);
   });
 });
 
 describe("settingsToSave", () => {
-  it("saves the theme only once it has been chosen", () => {
-    const settings = { ...defaultSettings(130), theme: "dark" as const };
-    expect(settingsToSave(settings)).toEqual({ wpm: 130, fontSize: 32, lineHeight: 1.5 });
-    expect(settingsToSave({ ...settings, themeChosen: true })).toEqual({
-      wpm: 130,
-      fontSize: 32,
-      lineHeight: 1.5,
-      theme: "dark",
-    });
+  it("saves speed, text size and line spacing", () => {
+    expect(settingsToSave(defaultSettings(130))).toEqual({ wpm: 130, fontSize: 32, lineHeight: 1.5 });
   });
 });
 
 describe("savedSettingsSchema", () => {
-  const valid = { wpm: 150, fontSize: 40, lineHeight: 1.7, theme: "light" };
+  const valid = { wpm: 150, fontSize: 40, lineHeight: 1.7 };
 
   it("accepts settings the controls can produce", () => {
     expect(savedSettingsSchema.safeParse(valid).success).toBe(true);
-    expect(savedSettingsSchema.safeParse({ ...valid, theme: undefined }).success).toBe(true);
     for (const lineHeight of teleprompter.lineHeights) {
       expect(savedSettingsSchema.safeParse({ ...valid, lineHeight }).success).toBe(true);
     }
@@ -92,7 +77,7 @@ describe("savedSettingsSchema", () => {
       { ...valid, wpm: 150.5 },
       { ...valid, fontSize: teleprompter.fontSize.min - 1 },
       { ...valid, lineHeight: 1.62 },
-      { ...valid, theme: "purple" },
+      { ...valid, theme: "dark" },
       { ...valid, fontSize: "40" },
       { ...valid, userId: "someone-else" },
       null,
@@ -103,17 +88,11 @@ describe("savedSettingsSchema", () => {
 });
 
 describe("profileUpdate", () => {
-  it("names only the preference columns, and the theme only when given", () => {
+  it("names only the teleprompter's preference columns", () => {
     expect(profileUpdate({ wpm: 150, fontSize: 40, lineHeight: 1.7 })).toEqual({
       pref_wpm: 150,
       pref_font_size: 40,
       pref_line_height: 1.7,
-    });
-    expect(profileUpdate({ wpm: 150, fontSize: 40, lineHeight: 1.7, theme: "dark" })).toEqual({
-      pref_wpm: 150,
-      pref_font_size: 40,
-      pref_line_height: 1.7,
-      pref_theme: "dark",
     });
   });
 });
@@ -122,7 +101,7 @@ describe("sameSettings", () => {
   it("compares every field", () => {
     const a = { wpm: 150, fontSize: 40, lineHeight: 1.7 };
     expect(sameSettings(a, { ...a })).toBe(true);
-    expect(sameSettings(a, { ...a, theme: "dark" })).toBe(false);
+    expect(sameSettings(a, { ...a, lineHeight: 2 })).toBe(false);
     expect(sameSettings(a, { ...a, wpm: 160 })).toBe(false);
   });
 });

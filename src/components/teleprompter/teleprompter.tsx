@@ -34,6 +34,7 @@ import {
   type TextRun,
 } from "@/lib/teleprompter/position";
 import { SettingsSync } from "@/lib/teleprompter/settings-sync";
+import { chooseTheme, currentTheme, DEFAULT_THEME, watchCurrentTheme } from "@/lib/theme";
 import {
   clearProgress,
   loadProgress,
@@ -152,6 +153,8 @@ function TeleprompterScreen({
 }: TeleprompterProps) {
   const router = useRouter();
 
+  // Always the site's theme; the theme button switches the whole site.
+  const theme = useSyncExternalStore(watchCurrentTheme, currentTheme, () => DEFAULT_THEME);
   const [settings, setSettings] = useState(() =>
     loadSettings(practice.languages[language].wpm, profile?.settings),
   );
@@ -715,7 +718,7 @@ function TeleprompterScreen({
 
   // ----- Render
 
-  const dark = settings.theme === "dark";
+  const dark = theme === "dark";
   const lineHeightPx = settings.fontSize * settings.lineHeight;
   const progress = progressAt(display.position, wordCount);
   const remaining = remainingSeconds(display.position, wordCount, settings.wpm);
@@ -725,12 +728,12 @@ function TeleprompterScreen({
   return (
     <div
       ref={rootRef}
-      // Its own theme, so the theme button works whatever the site's theme is.
-      data-theme={settings.theme}
+      // The site's theme, set here too so the teleprompter's colours follow it.
+      data-theme={theme}
       className={`fixed inset-0 z-50 flex flex-col ${dark ? "bg-neutral-950 text-neutral-100" : "bg-white text-neutral-900"}`}
       style={
         {
-          colorScheme: settings.theme,
+          colorScheme: theme,
           // The text colour as RGB channels (neutral-100 / neutral-900), so the
           // speech can use it at any strength.
           "--tp-text": dark ? "245 245 245" : "23 23 23",
@@ -844,12 +847,8 @@ function TeleprompterScreen({
               lineHeight: stepLineHeight(settingsRef.current.lineHeight, direction),
             })
           }
-          onToggleTheme={() =>
-            updateSettings({
-              theme: settingsRef.current.theme === "dark" ? "light" : "dark",
-              themeChosen: true,
-            })
-          }
+          dark={dark}
+          onToggleTheme={() => chooseTheme(currentTheme() === "dark" ? "light" : "dark")}
           onToggleFullscreen={toggleFullscreen}
           onFinish={finish}
           onPointerPress={focusText}

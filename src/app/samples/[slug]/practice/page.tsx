@@ -8,7 +8,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getOpenSession } from "@/lib/practice/data";
 import { getSample } from "@/lib/samples";
 import { createClient } from "@/lib/supabase/server";
-import { getSavedSettings } from "@/lib/teleprompter/profile";
+import { getSavedSettings } from "@/lib/profile";
 
 export function generateStaticParams() {
   return samples.map(({ slug }) => ({ slug }));
