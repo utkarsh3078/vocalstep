@@ -28,10 +28,13 @@ import { offeredLanguages, practice } from "@/config/practice";
 import { getAllSamples, type Sample } from "@/lib/samples";
 import { excerptBlocks } from "@/lib/teleprompter/demo";
 
-/** "5, 10 or 15", from the configured durations. */
+/** "5", or "5, 10 or 15", from the configured durations. */
 const durationList = practice.durations.join(", ").replace(/, (\d+)$/, " or $1");
-/** "5–15", for the big number. */
-const durationRange = `${Math.min(...practice.durations)}–${Math.max(...practice.durations)}`;
+const shortest = Math.min(...practice.durations);
+const longest = Math.max(...practice.durations);
+/** "5", or "5–15", for the big number. */
+const durationRange = shortest === longest ? `${shortest}` : `${shortest}–${longest}`;
+const singleDuration = practice.durations.length === 1;
 const languageList = offeredLanguages.map((code) => practice.languages[code].label).join(" and ");
 
 const STEPS: { title: string; text: string; icon: LucideIcon }[] = [
@@ -42,7 +45,9 @@ const STEPS: { title: string; text: string; icon: LucideIcon }[] = [
   },
   {
     title: "Generate your script",
-    text: `Pick ${durationList} minutes. A natural, conversational speech of that length is written for you.`,
+    text: singleDuration
+      ? `A natural, conversational ${durationList}-minute speech is written for you.`
+      : `Pick ${durationList} minutes. A natural, conversational speech of that length is written for you.`,
     icon: WandSparkles,
   },
   {

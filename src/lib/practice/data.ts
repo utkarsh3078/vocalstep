@@ -1,7 +1,7 @@
 import "server-only";
 
 import { practice } from "@/config/practice";
-import { getSample } from "@/lib/samples";
+import { findPractisedSample } from "@/lib/samples";
 import { displayStatus, type SpeechSummary } from "@/lib/speech/data";
 import type { createClient } from "@/lib/supabase/server";
 
@@ -57,6 +57,37 @@ export async function getOpenSession(
     activeSeconds: data.active_seconds,
     lastActiveAt: data.last_active_at,
   };
+}
+
+/**
+ * The user's unfinished sessions on any of these samples, by slug, in one
+ * query (for the library list). Undefined when they could not be read; each
+ * button then falls back to this browser's own progress.
+ */
+export async function getOpenSampleSessions(
+  supabase: Supabase,
+  slugs: readonly string[],
+): Promise<Map<string, OpenSession> | undefined> {
+  const { data, error } = await supabase
+    .from("practice_sessions")
+    .select("id, sample_slug, last_word_index, active_seconds, last_active_at")
+    .eq("status", "in_progress")
+    .in("sample_slug", [...slugs]);
+  if (error) {
+    console.error("Could not load the practice sessions:", error.code, error.message);
+    return undefined;
+  }
+  const sessions = new Map<string, OpenSession>();
+  for (const row of data) {
+    if (!row.sample_slug) continue;
+    sessions.set(row.sample_slug, {
+      id: row.id,
+      wordIndex: row.last_word_index,
+      activeSeconds: row.active_seconds,
+      lastActiveAt: row.last_active_at,
+    });
+  }
+  return sessions;
 }
 
 /** The dashboard's numbers: totals, streaks, and practice on each recent day. */
@@ -195,16 +226,16 @@ export async function listRecentPractice(
       };
     }
 
-    const sample = getSample(row.sample_slug ?? "");
+    const found = findPractisedSample(row.sample_slug ?? "");
     return {
       ...base,
-      title: sample?.title ?? "A sample speech",
-      links: sample
+      title: found?.sample.title ?? "A sample speech",
+      links: found
         ? {
-            practiceHref: `/samples/${sample.slug}/practice`,
-            pageHref: `/samples/${sample.slug}`,
-            progressId: `sample:${sample.slug}`,
-            wordCount: sample.speech.wordCount,
+            practiceHref: found.practiceHref,
+            pageHref: found.pageHref,
+            progressId: `sample:${found.sample.slug}`,
+            wordCount: found.sample.speech.wordCount,
             open,
           }
         : null,

@@ -2,10 +2,10 @@
 
 import { z } from "zod";
 
-import { samples } from "@/content/samples";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/env/public";
 import { practiceTargetSchema, type PracticeTarget } from "@/lib/practice/target";
+import { isPractiseableSample } from "@/lib/samples";
 import { createClient } from "@/lib/supabase/server";
 
 export type StartPracticeResult = { sessionId: string } | { error: "unauthorized" | "failed" };
@@ -25,7 +25,7 @@ export async function startPracticeSession(
   const parsed = practiceTargetSchema.safeParse(target);
   if (!parsed.success) return { error: "failed" };
   const sampleSlug = "sampleSlug" in parsed.data ? parsed.data.sampleSlug : null;
-  if (sampleSlug && !samples.some(({ slug }) => slug === sampleSlug)) return { error: "failed" };
+  if (sampleSlug && !isPractiseableSample(sampleSlug)) return { error: "failed" };
   if (!isSupabaseConfigured()) return { error: "unauthorized" };
 
   const user = await getCurrentUser();

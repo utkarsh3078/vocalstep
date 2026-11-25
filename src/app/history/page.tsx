@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, BookOpen, Check, FileText, Mic, Plus, type LucideIcon } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, FileText, Library, Mic, Plus, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
@@ -6,7 +6,7 @@ import { Suspense, type ReactNode } from "react";
 import { DeleteSpeechButton } from "@/components/speech/delete-speech-button";
 import { PracticeLink } from "@/components/teleprompter/practice-link";
 import { practice } from "@/config/practice";
-import { samples } from "@/content/samples";
+import { librarySpeeches } from "@/content/library";
 import { requireUser } from "@/lib/auth/session";
 import { getHistoryPage, type HistoryEntry } from "@/lib/practice/data";
 import { formatPracticeTime, pageCount, parsePage, practiceStatusLabel } from "@/lib/practice/history";
@@ -78,6 +78,7 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
       </Link>
     </header>
   );
+  const libraryCard = <LibraryCard />;
 
   const deletedNotice = deleted && (
     <p
@@ -93,6 +94,7 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
     return (
       <>
         {header}
+        {libraryCard}
         <p role="alert" className="mt-8 rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-danger-800">
           We couldn&apos;t load your speeches just now. Please refresh the page.
         </p>
@@ -108,6 +110,7 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
         {header}
         {deletedNotice}
         <EmptyState />
+        {libraryCard}
       </>
     );
   }
@@ -117,6 +120,7 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
       <>
         {header}
         {deletedNotice}
+        {libraryCard}
         <p className={`${card} mt-8 p-7 text-muted`}>
           There&apos;s nothing on this page.{" "}
           <Link href={pageHref(pages)} className="font-medium text-ink underline underline-offset-4">
@@ -134,6 +138,7 @@ async function History({ searchParams }: Pick<PageProps<"/history">, "searchPara
     <>
       {header}
       {deletedNotice}
+      {libraryCard}
 
       <section aria-label="Speeches" className={`${card} mt-8 px-5 sm:px-7`}>
         <ul className="divide-y divide-line">
@@ -300,20 +305,42 @@ function EmptyState() {
       <h2 className="mt-6 text-2xl font-semibold tracking-tight">You haven&apos;t created any speeches yet.</h2>
       <p className="mt-2 max-w-xl text-muted">
         Pick a topic and a length, and we&apos;ll write a speech for you to read aloud. You can
-        practise a sample speech while you decide.
+        practise a ready-made speech from the library while you decide.
       </p>
       <div className="mt-6 flex flex-wrap gap-3">
         <Link href="/create" className={primaryButton}>
           <Plus aria-hidden="true" className="size-4" />
           Create your first speech
         </Link>
-        {samples[0] && (
-          <Link href={`/samples/${samples[0].slug}`} className={secondaryButton}>
-            <BookOpen aria-hidden="true" className="size-4" />
-            Try a sample
-          </Link>
-        )}
+        <Link href="/library" className={secondaryButton}>
+          <BookOpen aria-hidden="true" className="size-4" />
+          Browse the library
+        </Link>
       </div>
+    </section>
+  );
+}
+
+/** The way into the speech library, shown above the user's own speeches. */
+function LibraryCard() {
+  return (
+    <section
+      aria-labelledby="library-card"
+      className="mt-8 flex flex-col gap-4 rounded-card bg-canvas p-6 ring-1 ring-line sm:flex-row sm:items-center"
+    >
+      <IconWell icon={Library} />
+      <div className="flex-1">
+        <h2 id="library-card" className="font-semibold tracking-tight">
+          Speech library
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          {librarySpeeches.length} ready-made speeches on study, space, AI and more. Free to practise, as often as
+          you like.
+        </p>
+      </div>
+      <Link href="/library" className={secondaryButton}>
+        Browse the library
+      </Link>
     </section>
   );
 }

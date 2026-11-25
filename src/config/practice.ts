@@ -3,8 +3,12 @@
  * Change a value in this file and the whole app follows.
  */
 export const practice = {
-  /** Session lengths the user can choose, in minutes. */
-  durations: [5, 10, 15],
+  /**
+   * Session lengths the user can choose, in minutes. Only 5 for now
+   * (2026-11-25); add 10 or 15 back here to offer them again. Speeches already
+   * written at other lengths still display and practise normally.
+   */
+  durations: [5],
   defaultDuration: 5,
 
   /**

@@ -23,8 +23,8 @@ import { createClient } from "@/lib/supabase/server";
  * Writes a new speech and streams it back as newline-delimited JSON events
  * (see src/lib/speech/stream.ts).
  *
- * A 15-minute speech takes 6 AI requests, so this route may run for a minute or
- * two. Vercel's Hobby plan allows up to 300 seconds with Fluid compute.
+ * A 15-minute speech takes 6 AI requests (5 minutes: 3), so this route may run
+ * for a minute or two. Vercel's Hobby plan allows up to 300 seconds with Fluid compute.
  */
 export const maxDuration = 300;
 

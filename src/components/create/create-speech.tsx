@@ -114,29 +114,37 @@ export function CreateSpeech({
         </ul>
       </div>
 
-      <fieldset className="mt-8">
-        <legend className="text-lg font-semibold tracking-tight">How long do you want to speak?</legend>
-        <div className="mt-3 grid grid-cols-3 gap-3">
-          {practice.durations.map((duration) => (
-            <label key={duration} className={`${choice} px-4 py-4 text-center`}>
-              <input
-                type="radio"
-                name="minutes"
-                value={duration}
-                checked={minutes === duration}
-                onChange={() => setMinutes(duration)}
-                className="sr-only"
-              />
-              <span className="block text-2xl font-semibold tracking-tight tabular-nums">{duration}</span>
-              <span className="block text-sm text-muted">minutes</span>
-              <span className="mt-2 block text-xs text-muted tabular-nums">
-                <span className="hidden sm:inline">about </span>
-                {wordTarget(duration, wpm)} words
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      {practice.durations.length === 1 ? (
+        // One length on offer: say what it is, rather than show a choice of one.
+        <p className="mt-8 text-muted">
+          <span className="font-semibold text-ink">{practice.durations[0]}-minute speech</span>, about{" "}
+          {wordTarget(practice.durations[0], wpm)} words.
+        </p>
+      ) : (
+        <fieldset className="mt-8">
+          <legend className="text-lg font-semibold tracking-tight">How long do you want to speak?</legend>
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            {practice.durations.map((duration) => (
+              <label key={duration} className={`${choice} px-4 py-4 text-center`}>
+                <input
+                  type="radio"
+                  name="minutes"
+                  value={duration}
+                  checked={minutes === duration}
+                  onChange={() => setMinutes(duration)}
+                  className="sr-only"
+                />
+                <span className="block text-2xl font-semibold tracking-tight tabular-nums">{duration}</span>
+                <span className="block text-sm text-muted">minutes</span>
+                <span className="mt-2 block text-xs text-muted tabular-nums">
+                  <span className="hidden sm:inline">about </span>
+                  {wordTarget(duration, wpm)} words
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       <details className="group mt-6 rounded-2xl border border-line">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-medium [&::-webkit-details-marker]:hidden">

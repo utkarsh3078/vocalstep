@@ -1,16 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { librarySpeeches } from "@/content/library";
 import { samples } from "@/content/samples";
 import { isProtectedPath, loginHref } from "@/lib/auth/redirect";
 import { redirectWithCookies, updateSession } from "@/lib/supabase/proxy";
 
 const sampleSlugs = new Set(samples.map((sample) => sample.slug));
+const librarySlugs = new Set(librarySpeeches.map((speech) => speech.slug));
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Runs before every page request.
  *
- * 1. Unknown sample addresses, and speech addresses that are not UUIDs, get a
+ * 1. Unknown sample and library addresses, and speech addresses that are not UUIDs, get a
  *    real 404. With Cache Components a page's static shell is sent with a 200
  *    status before the page can check its params, so this check happens here.
  *    (A well-formed id the user cannot see still shows the not-found page.)
@@ -25,6 +27,13 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/samples/")) {
     const slug = pathname.split("/")[2];
     if (slug && !sampleSlugs.has(slug)) {
+      return NextResponse.rewrite(new URL("/_not-found", request.url), { status: 404 });
+    }
+  }
+
+  if (pathname.startsWith("/library/")) {
+    const slug = pathname.split("/")[2];
+    if (slug && !librarySlugs.has(slug)) {
       return NextResponse.rewrite(new URL("/_not-found", request.url), { status: 404 });
     }
   }

@@ -41,8 +41,8 @@ export async function HeaderAccount() {
       {/* Applies the theme saved to the account, and saves new choices. */}
       <AccountTheme saved={savedTheme} />
       <NavLink href="/dashboard">Dashboard</NavLink>
-      {/* A speech's own pages belong with the list of speeches. */}
-      <NavLink href="/history" match={["/history", "/speeches"]}>
+      {/* A speech's own pages, and the library, belong with the list of speeches. */}
+      <NavLink href="/history" match={["/history", "/speeches", "/library"]}>
         Your speeches
       </NavLink>
       <NavLink href="/create">Create</NavLink>

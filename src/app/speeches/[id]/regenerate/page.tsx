@@ -70,6 +70,14 @@ async function Regenerate({ params }: { params: Promise<{ id: string }> }) {
         as often as you like.
       </>,
     );
+  } else if (!(practice.durations as readonly number[]).includes(speech.targetMinutes)) {
+    main = notice(
+      "peach",
+      <>
+        New {speech.targetMinutes}-minute speeches can&apos;t be written right now. This speech stays yours to
+        practise as often as you like.
+      </>,
+    );
   } else if (!getAiEnv()) {
     main = notice("peach", <>Writing new speeches isn&apos;t switched on yet.</>);
   } else if (!quota) {

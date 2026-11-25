@@ -17,6 +17,7 @@ import { Suspense, type ReactNode } from "react";
 
 import { PracticeLink } from "@/components/teleprompter/practice-link";
 import { practice } from "@/config/practice";
+import { librarySpeeches } from "@/content/library";
 import { samples } from "@/content/samples";
 import { requireUser } from "@/lib/auth/session";
 import { getPracticeOverview, listRecentPractice, type PracticeOverview, type RecentPractice } from "@/lib/practice/data";
@@ -398,6 +399,13 @@ function RecentPracticeList({ recent, timezone }: { recent: RecentPractice[] | n
             </li>
           ))}
         </ul>
+        <p className="mt-4 text-sm text-muted">
+          Or pick from{" "}
+          <Link href="/library" className="font-medium text-ink underline underline-offset-4">
+            {librarySpeeches.length} more in the speech library
+          </Link>
+          .
+        </p>
       </div>
     );
   }
@@ -411,7 +419,7 @@ function RecentPracticeList({ recent, timezone }: { recent: RecentPractice[] | n
         const resumable = links?.open != null;
         return (
           <li key={item.sessionId} className="flex flex-wrap items-center gap-x-4 gap-y-3 py-4 first:pt-2 last:pb-0">
-            <IconWell icon={links?.pageHref.startsWith("/samples/") ? BookOpen : Mic} />
+            <IconWell icon={links && !links.pageHref.startsWith("/speeches/") ? BookOpen : Mic} />
             <div className="min-w-48 flex-1">
               {links ? (
                 <Link href={links.pageHref} className="font-medium underline-offset-4 hover:underline">
