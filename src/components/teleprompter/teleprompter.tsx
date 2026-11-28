@@ -56,6 +56,7 @@ import {
 
 import { FinishedScreen } from "./finished-screen";
 import { TeleprompterControls, type PlaybackStatus } from "./teleprompter-controls";
+import { TeleprompterLoading } from "./teleprompter-loading";
 import { TeleprompterText } from "./teleprompter-text";
 
 export interface TeleprompterProps {
@@ -106,7 +107,7 @@ const subscribeToNothing = () => () => {};
  * Full-screen teleprompter for one speech.
  *
  * The teleprompter depends on the browser (stored settings and progress, text
- * measurement), so the server renders only a loading line and the real screen
+ * measurement), so the server renders a loading screen and the real screen
  * mounts once the page runs in the browser.
  */
 export function Teleprompter(props: TeleprompterProps) {
@@ -127,13 +128,7 @@ export function Teleprompter(props: TeleprompterProps) {
     );
   }
 
-  if (!isBrowser) {
-    return (
-      <p role="status" className="text-muted">
-        Loading the teleprompter…
-      </p>
-    );
-  }
+  if (!isBrowser) return <TeleprompterLoading title={props.title} />;
 
   return <TeleprompterScreen {...props} />;
 }
@@ -730,7 +725,8 @@ function TeleprompterScreen({
       ref={rootRef}
       // The site's theme, set here too so the teleprompter's colours follow it.
       data-theme={theme}
-      className={`fixed inset-0 z-50 flex flex-col ${dark ? "bg-neutral-950 text-neutral-100" : "bg-white text-neutral-900"}`}
+      // The contents fade in over the loading screen's matching background.
+      className={`fixed inset-0 z-50 flex flex-col *:motion-safe:animate-tp-fade-in ${dark ? "bg-neutral-950 text-neutral-100" : "bg-white text-neutral-900"}`}
       style={
         {
           colorScheme: theme,

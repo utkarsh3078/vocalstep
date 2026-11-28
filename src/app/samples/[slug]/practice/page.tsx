@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { TeleprompterLoading } from "@/components/teleprompter/teleprompter-loading";
 import { Teleprompter, type TeleprompterProps } from "@/components/teleprompter/teleprompter";
 import { samples } from "@/content/samples";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -29,11 +30,7 @@ export default function SamplePracticePage({ params }: PageProps<"/samples/[slug
   return (
     // The slug is URL data, so it is read inside Suspense.
     <Suspense
-      fallback={
-        <p role="status" className="text-muted">
-          Loading the teleprompter…
-        </p>
-      }
+      fallback={<TeleprompterLoading />}
     >
       <SamplePractice params={params} />
     </Suspense>

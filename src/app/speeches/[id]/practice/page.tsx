@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { TeleprompterLoading } from "@/components/teleprompter/teleprompter-loading";
 import { Teleprompter } from "@/components/teleprompter/teleprompter";
 import { requireUser } from "@/lib/auth/session";
 import { getOpenSession } from "@/lib/practice/data";
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function SpeechPracticePage({ params }: PageProps<"/speeches/[id]/practice">) {
   return (
-    <Suspense fallback={<p role="status" className="text-muted">Loading the teleprompter…</p>}>
+    <Suspense fallback={<TeleprompterLoading />}>
       <Practice params={params} />
     </Suspense>
   );

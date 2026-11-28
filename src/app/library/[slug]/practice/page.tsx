@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { TeleprompterLoading } from "@/components/teleprompter/teleprompter-loading";
 import { Teleprompter } from "@/components/teleprompter/teleprompter";
 import { requireUser } from "@/lib/auth/session";
 import { getOpenSession } from "@/lib/practice/data";
@@ -18,11 +19,7 @@ export default function LibraryPracticePage({ params }: PageProps<"/library/[slu
   return (
     // The slug is URL data and the page needs the session, so both are read inside Suspense.
     <Suspense
-      fallback={
-        <p role="status" className="text-muted">
-          Loading the teleprompter…
-        </p>
-      }
+      fallback={<TeleprompterLoading />}
     >
       <LibraryPractice params={params} />
     </Suspense>
